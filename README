@@ -1,0 +1,39 @@
+ jQuery plugin to impliment RSA public key encryption for
+ form submissions.
+
+ Utilizes the pidCrypt libraries for client public key
+ encryption while the associated PHP class uses
+ OpenSSL to generate the necessary private/public key pairs used
+ by this plug-in
+
+ Fork me @ https://www.github.com/jas-/jQuery.pidCrypt
+
+ REQUIREMENTS:
+ - jQuery libraries (required - http://www.jquery.com)
+ - pidCrypt RSA & AES libraries (required - https://www.pidder.com/pidcrypt/)
+ - jQuery cookie plugin (optional - http://plugins.jquery.com/files/jquery.cookie.js.txt)
+
+ FEATURES:
+ - HTML5 localStorage support
+ - HTML5 sessionStorage support
+ - Cookie support
+
+ OPTIONS:
+ - storage:  HTML5 localStorage, sessionStorage and cookies supported
+ - callback: Optional function used once server recieves encrypted data
+
+ USAGE:
+ - Default usage using HTML5 localStorage
+ $('#form').pidCrypt();
+
+ - Using HTML5 sessionStorage
+ $('#form').pidCrypt({storage:'sessionStorage'});
+ 
+ - Using cookies (requires the jQuery cookie plug-in)
+ $('#form').pidCrypt({storage:'cookie'});
+ 
+ - Example of using the callback method to process server response
+ $('#form').pidCrypt({callback:function(){ console.log('foo'); }});
+
+ Author: Jason Gerfen <jason.gerfen@gmail.com>
+ License: GPL
