@@ -14,8 +14,7 @@ $settings['dn']['countryName']            = 'US';
 $settings['dn']['stateOrProvinceName']    = 'Utah';
 $settings['dn']['localityName']           = 'Salt Lake City';
 $settings['dn']['organizationName']       = 'jQuery.pidCrypt';
-$settings['dn']['organizationalUnitName'] = 'Plug-in for easy implementation of
-                                             RSA public key encryption';
+$settings['dn']['organizationalUnitName'] = 'Plug-in for easy implementation of RSA public key encryption';
 $settings['dn']['commonName']             = 'Jason Gerfen';
 $settings['dn']['emailAddress']           = 'jason.gerfen@gmail.com';
 
@@ -32,18 +31,19 @@ if (file_exists('libs/classes/class.openssl.php')) {
  if (is_object($openssl)) {
   if ((!empty($_POST))&&($_SERVER["HTTP_X_REQUESTED_WITH"]==='XMLHttpRequest')) {
 
+   /* make sure we have our necessary data */
+   if ((empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key']))||
+       (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key']))||
+       (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']))){
+    create();
+   }
+
    /*
     * public key?
     * If you used a database to store existing keys
     * add the support after this conditional
     */
    if ((!empty($_POST['k']))&&($_POST['k']==='true')) {
-
-    /* Generate the private key */
-    $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'] = $openssl->genPriv($_SERVER['REMOTE_ADDR']);
-
-    /* Here we can either generate a public key or a certificate holding a public key */
-    $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'] = $openssl->genPub();
 
     /* Because we want to avoid MITM use AES to encrypt public key first */
     if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
@@ -55,6 +55,17 @@ if (file_exists('libs/classes/class.openssl.php')) {
     exit;
    }
 
+   if (!empty($_POST['do'])){
+    switch($_POST['do']){
+     case 'sign':
+      exit;
+     case 'sign_encrypt':
+      exit;
+     default:
+      exit;
+    }
+   }
+
    /*
     * If you wish to do anything further such as add a response that the data was recieved by the server etc
     * add it here
@@ -62,6 +73,37 @@ if (file_exists('libs/classes/class.openssl.php')) {
    echo 'Data recieved and processed...';
   }
  }
+}
+
+/*
+ * Create private/public/certificate for referring machine
+ */
+function create()
+{
+ /* Generate the private key */
+ $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'] = $openssl->genPriv($_SERVER['REMOTE_ADDR']);
+
+ /* Here we can either generate a public key or a certificate holding a public key */
+ $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'] = $openssl->genPub();
+
+ /* Create certificate */
+ $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'] = $openssl->newCert($settings['dn'],
+                                                                       $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                                                                       $settings['config']);
+}
+
+/*
+ * Loop over post data and attempt to sign it
+ */
+function sign($data, $cert, $key, $pass, $opts, $handle)
+{
+ $a = array();
+ if (count($data)>0){
+  foreach($data as $key => $value){
+   //$a[$key] = $handle->sign($value, $key, $pass, 365, $opts);
+  }
+ }
+ return $a;
 }
 
 /*
