@@ -54,6 +54,8 @@
    proxy:    $(this).attr('action'),  // Place holder for form action
    type:     $(this).attr('method'),  // Place holder for form method
    aes:      '',                      // Place holder for AES object
+   reset:    false,                   // Store public key (caching)
+   debug:    false,                   // Use debugging?
    callback: function() {}            // Optional callback once form processed
   };
 
@@ -69,6 +71,7 @@
      handlePub(opts);
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
+     (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
       __do(opts);
      });
     }
@@ -77,44 +80,35 @@
 
    /* method used to sign data using SSL certificate */
    sign: function(options){
-    var opts = $.extend({}, defaults, options);
-    if (__dependencies(opts)){
-     opts.aes = setupAES();
-     handleKey(opts);
-     handlePub(opts);
-     $('#'+opts.form).live('submit', function(e){
-      e.preventDefault();
-      __do(opts);
-     });
-    }
-    return true;
+
    },
 
    /* method used to encrypt then sign data using public key & SSL certificate */
    sign_encrypt: function(options){
 
-   },
-
-   /* delete stored keys and reset additional data */
-   reset: function(options){
-    var opts = $.extend({}, defaults, options);
-    _remove(opts);
-    return true;
    }
   };
 
   /* send it off to the server */
   var __do = function(options){
+   var a = encryptObj(options, getElements(options));
+   (options.debug) ? _show(options, a) : false;
    $.ajax({
-    data: encryptObj(options, getElements(options)),
+    data: a,
     type: options.type,
     url: options.proxy,
+    context: options.id,
     beforeSend: function(xhr) {
      xhr.setRequestHeader('X-Alt-Referer', 'jQuery.pidCrypt');
     },
     success: function(x){
+     (options.debug) ?
+      $('#'+options.form).append('<b>Server response:</b><br/>&nbsp;'+x) : false;
      ((options.callback)&&($.isFunction(options.callback))) ?
       options.callback.call(x) : false;
+    },
+    complete: function(x){
+     (options.reset) ? _remove(options) : false;
     }
    });
    return false;
@@ -186,7 +180,8 @@
 
   /* ask for public key or use existing */
   var handlePub = function(options){
-   (getItem(options.storage, 'pub')) ? getItem(options.storage, 'pub') :
+   (getItem(options.storage, 'pub')&&(!options.reset)) ? getItem(options.storage,
+                                                                 'pub') :
                                        getPub(options);
   }
 
@@ -256,6 +251,27 @@
     }
    }
    return y;
+  }
+
+  /* debugging output */
+  var _output = function(options){
+   if (options.debug) {
+    $('#'+options.form).append('<b>Processing form contents...</b><br/>');
+    $('#'+options.form).append('&nbsp;UUID: '+getItem(options.storage, 'uuid')+'<br/>');
+    $('#'+options.form).append('&nbsp;IV: '+getItem(options.storage, 'iv')+'<br/>');
+    $('#'+options.form).append('&nbsp;KEY: '+usePub(options)+'<br/>');
+   }
+   return true;
+  }
+
+  /* debugging output helper */
+  var _show = function(options, data){
+   if (sizeChk(data)>0){
+    $('#'+options.form).append('<b>Encrypted data:</b><br/>');
+    $.each(data, function(a,b){
+     $('#'+options.form).append('&nbsp;'+a+' = '+b+'<br/>');
+    });
+   }
   }
 
   /* use storage options to save form data */
