@@ -19,26 +19,40 @@
  * - HTML5 localStorage support
  * - HTML5 sessionStorage support
  * - Cookie support
+ * - Debugging output
+ *
+ * METHODS:
+ * - Default: Uses public key to encrypt form data prior to sending
+ * - Sign: Uses public key to sign data being emailed to recipient
+ * - Encypt_sign: Uses public key to encrypt and send email to recipient
  *
  * OPTIONS:
  * - storage: HTML5 localStorage, sessionStorage and cookies supported
  * - callback: Optional function used once server recieves encrypted data
+ * - reset: Prevent local caching of public key (forces server requests)
+ * - debug: Appends debugging information
  *
- * USAGE:
+ * EXAMPLES:
  * - Default usage using HTML5 localStorage
  * $('#form').pidCrypt();
  *
- * - Using HTML5 sessionStorage
+ * - Default Using HTML5 sessionStorage
  * $('#form').pidCrypt({storage:'sessionStorage'});
  *
- * - Using cookies (requires the jQuery cookie plug-in)
+ * - Default using cookies (requires the jQuery cookie plug-in)
  * $('#form').pidCrypt({storage:'cookie'});
  *
  * - Example of using the callback method to process server response
  * $('#form').pidCrypt({callback:function(){ console.log('foo'); }});
  *
+ * - Disable local caching of public key
+ * $('#form').pidCrypt({cache:false});
+ *
+ * - Enable debugging output
+ * $('#form').pidCrypt({debug:true});
+ *
  * Author: Jason Gerfen <jason.gerfen@gmail.com>
- * License: GPL
+ * License: GPL (see LICENSE)
  *
  */
 
@@ -56,6 +70,7 @@
    aes:      '',                      // Place holder for AES object
    reset:    false,                   // Store public key (caching)
    debug:    false,                   // Use debugging?
+   data:     {},                      // Object used for signing methods
    callback: function() {}            // Optional callback once form processed
   };
 
@@ -80,18 +95,43 @@
 
    /* method used to sign data using SSL certificate */
    sign: function(options){
-
+    var opts = $.extend({}, defaults, options);
+    if (__dependencies(opts)){
+     opts.aes = setupAES();
+     handleKey(opts);
+     handlePub(opts);
+     opts.data['do'] = 'sign';
+     $('#'+opts.form).live('submit', function(e){
+      e.preventDefault();
+     (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
+      __do(opts);
+     });
+    }
+    return true;
    },
 
    /* method used to encrypt then sign data using public key & SSL certificate */
    sign_encrypt: function(options){
-
+    var opts = $.extend({}, defaults, options);
+    if (__dependencies(opts)){
+     opts.aes = setupAES();
+     handleKey(opts);
+     handlePub(opts);
+     opts.data['do'] = 'sign_encrypt';
+     $('#'+opts.form).live('submit', function(e){
+      e.preventDefault();
+     (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
+      __do(opts);
+     });
+    }
+    return true;
    }
   };
 
   /* send it off to the server */
   var __do = function(options){
    var a = encryptObj(options, getElements(options));
+   a = (sizeChk(options.data)>0) ? $.extend({}, a, options.data) : a;
    (options.debug) ? _show(options, a) : false;
    $.ajax({
     data: a,
