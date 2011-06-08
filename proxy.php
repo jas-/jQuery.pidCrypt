@@ -35,7 +35,7 @@ if (file_exists('libs/classes/class.openssl.php')) {
    if ((empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key']))||
        (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key']))||
        (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']))){
-    create();
+    create($settings, $openssl);
    }
 
    /*
@@ -78,7 +78,7 @@ if (file_exists('libs/classes/class.openssl.php')) {
 /*
  * Create private/public/certificate for referring machine
  */
-function create()
+function create($settings, $openssl)
 {
  /* Generate the private key */
  $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'] = $openssl->genPriv($_SERVER['REMOTE_ADDR']);
