@@ -132,7 +132,7 @@ class openssl
   * @param $opt array Array of cipher specific options
   * @return object The certificate object
   */
- private function newCert($dn, $private, $opt)
+ public function newCert($dn, $private, $opt)
  {
   return ((is_array($opt))&&(!empty($opt))) ? openssl_csr_new($dn,
                                                               $private,
@@ -150,7 +150,7 @@ class openssl
   * @param $ca array Misc. options
   * @return object The PKCS#11 object
   */
- private function sign($csr, $private, $password, $days, $opt, $ca=NULL)
+ public function sign($csr, $private, $password, $days, $opt, $ca=NULL)
  {
   $a = openssl_pkey_get_private($private, $password);
   return openssl_csr_sign($csr, $ca, $a, $days, $opt);
