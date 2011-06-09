@@ -261,7 +261,7 @@
   /* get form elements */
   var getElements = function(opts){
    var obj={};
-   $.each($('#'+opts.form+' :text, :password, :file, input:hidden, input:checkbox:checked, input:radio:checked, textarea, input[type="email"]'), function(k, v){
+   $.each($('#'+opts.form+' :text, :password, :file, input:hidden, input:checkbox:checked, input:radio:checked, textarea, input[type="email"], input[type="url"], input[type="number"], input[type="range"], input[type="date"], input[type="month"], input[type="week"], input[type="time"], input[type="datetime"], input[type="datetime-local"], input[type="search"], input[type="color"]'), function(k, v){
     if (validateString(v.value)){
      obj[v.name] = (parseInt(v.value.length)>80) ? strSplit(v.value) : v.value;
     }
