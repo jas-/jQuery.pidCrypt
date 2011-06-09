@@ -434,7 +434,7 @@
   /* cookie delete */
   var delCookie = function(name){
    if (typeof $.cookie === 'function') {
-    return ($.cookie(k, v, {expires: -7})) ? true : false;
+    return ($.cookie(name, '', {expires: -7})) ? true : false;
    } else {
     return false;
    }
