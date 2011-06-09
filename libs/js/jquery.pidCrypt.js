@@ -18,6 +18,7 @@
  * FEATURES:
  * - HTML5 localStorage support
  * - HTML5 sessionStorage support
+ * - HTML5 form elements
  * - Cookie support
  * - Debugging output
  *
@@ -295,9 +296,9 @@
   var _output = function(options){
    if (options.debug) {
     $('#'+options.form).append('<b>Processing form contents...</b><br/>');
-    $('#'+options.form).append('&nbsp;UUID: '+getItem(options.storage, 'uuid')+'<br/>');
-    $('#'+options.form).append('&nbsp;IV: '+getItem(options.storage, 'iv')+'<br/>');
-    $('#'+options.form).append('&nbsp;KEY: '+usePub(options)+'<br/>');
+    $('#'+options.form).append('&nbsp;<i>UUID:</i> '+getItem(options.storage, 'uuid')+'<br/>');
+    $('#'+options.form).append('&nbsp;<i>IV:</i> '+getItem(options.storage, 'iv')+'<br/>');
+    $('#'+options.form).append('&nbsp;<i>KEY:</i> '+usePub(options)+'<br/>');
    }
    return true;
   }
@@ -307,7 +308,14 @@
    if (sizeChk(data)>0){
     $('#'+options.form).append('<b>Encrypted data:</b><br/>');
     $.each(data, function(a,b){
-     $('#'+options.form).append('&nbsp;'+a+' = '+b+'<br/>');
+     if (typeof b==='object'){
+      $('#'+options.form).append('&nbsp;<i>'+a+':</i><br/>');
+      $.each(b, function(x,y){
+       $('#'+options.form).append('&nbsp;<i>'+x+'</i> = '+y+'<br/>');
+      });
+     } else {
+      $('#'+options.form).append('&nbsp;<i>'+a+'</i> = '+b+'<br/>');
+     }
     });
    }
   }
