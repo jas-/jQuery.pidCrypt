@@ -121,7 +121,7 @@ class openssl
   */
  public function decodeCert($certificate)
  {
-  return openssl_x509_parse($certificate);
+  return openssl_x509_parse(openssl_x509_read($certificate));
  }
 
  /*!
@@ -154,6 +154,22 @@ class openssl
  {
   $a = openssl_pkey_get_private($private, $password);
   return openssl_csr_sign($csr, $ca, $a, $days, $opt);
+ }
+
+ public function ssign($data, $private, $pass, $algo='sha512')
+ {
+  $a = openssl_pkey_get_private($private, $pass);
+  openssl_sign($data, $b, $a, $algo);
+  return $b;
+ }
+
+ public function handleCertificate($o, $p, $x)
+ {
+  $a = openssl_pkey_get_private($p, $x);
+  $b = openssl_csr_new($o['dn'], $a, $o['config']);
+  $c = openssl_csr_sign($b, null, $a, 365);
+  openssl_x509_export($c, $d);
+  return $d;
  }
 
  /*!
@@ -207,9 +223,11 @@ class openssl
  {
   $res = (is_array($key)) ? openssl_get_privatekey($key['key'], $pass) :
                             openssl_get_privatekey($key, $pass);
+
   ($_SERVER["HTTP_X_REQUESTED_WITH"] === 'XMLHttpRequest') ?
    openssl_private_decrypt($this->convertBin($crypt), $this->output, $res) :
    openssl_private_decrypt($crypt, $this->output, $res);
+
   return ($_SERVER["HTTP_X_REQUESTED_WITH"] === 'XMLHttpRequest') ?
    base64_decode($this->output) : $this->output;
  }
