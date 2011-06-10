@@ -112,7 +112,7 @@
    },
 
    /* method used to encrypt then sign data using public key & SSL certificate */
-   sign_encrypt: function(options){
+   encrypt_sign: function(options){
     var opts = $.extend({}, defaults, options);
     if (__dependencies(opts)){
      opts.aes = setupAES();
@@ -241,6 +241,9 @@
           '&i='+getItem(options.storage, 'iv'),
     type: 'post',
     url: options.proxy,
+    beforeSend: function(xhr) {
+     xhr.setRequestHeader('X-Alt-Referer', 'jQuery.pidCrypt');
+    },
     success: function(response){
      setItem(options.storage, 'pub',
              options.aes.encryptText(response,
