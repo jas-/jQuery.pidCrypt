@@ -119,15 +119,16 @@ function sign($data, $key, $pass, $certificate, $openssl)
 {
  $msg = setHeaders('../tmp/msg.txt', $openssl);
  $signed = '../tmp/signed.txt';
- if (openssl_pkcs7_sign($msg, $signed, $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
-                        array($_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
-                              $_SERVER['REMOTE_ADDR']),
-                        array("To" => $openssl->privDenc($_POST['email'], $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'], $_SERVER['REMOTE_ADDR']),
-                              "From: jQuery.pidCrypt <jason.gerfen@gmail.com>",
-                              "Subject" => "A test"))) {
-  exec(ini_get('sendmail_path').' < '.$signed);
-  return array('signed'=>'Message sent');
- }
+ $res = $openssl->signx509($msg, $signed, $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
+                           array($_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                                 $_SERVER['REMOTE_ADDR']),
+                           array("To" => $openssl->privDenc($_POST['email'],
+                                                            $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                                                            $_SERVER['REMOTE_ADDR']),
+                                 "From: jQuery.pidCrypt <jason.gerfen@gmail.com>",
+                                 "Subject" => "A test"));
+ exec(ini_get('sendmail_path').' < '.$res);
+ return array('signed'=>'Message sent');
 }
 
 /* Create mail message */
