@@ -133,13 +133,13 @@ class openssl
   * @param $x string The password originally used to create private key
   * @return string The x.509 certificate
   */
- public function createx509($o, $p, $x)
+ public function createx509($o, $p, $x, $f=false)
  {
   $a = openssl_pkey_get_private($p, $x);
   $b = openssl_csr_new($o['dn'], $a, $o['config']);
   $c = openssl_csr_sign($b, null, $a, 365);
-  openssl_x509_export($c, $d);
-  return $d;
+  ($f===false) ? openssl_x509_export($c, $d) : openssl_x509_export_to_file($c, $f);
+  return ($f===false) ? $d :$f;
  }
 
  /*!
