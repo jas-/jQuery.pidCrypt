@@ -25,7 +25,7 @@
  * METHODS:
  * - Default: Uses public key to encrypt form data prior to sending
  * - Sign: Uses public key to sign data being emailed to recipient
- * - Encypt_sign: Uses public key to encrypt and send email to recipient
+ * - Encypt_sign: Uses public key to encrypt, sign and send email to recipient
  *
  * OPTIONS:
  * - storage: HTML5 localStorage, sessionStorage and cookies supported
