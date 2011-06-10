@@ -118,7 +118,7 @@
      opts.aes = setupAES();
      handleKey(opts);
      handlePub(opts);
-     opts.data['do'] = 'sign_encrypt';
+     opts.data['do'] = 'encrypt_sign';
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
      (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
