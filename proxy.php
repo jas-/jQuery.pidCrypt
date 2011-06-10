@@ -1,5 +1,7 @@
 <?php
 
+echo '<pre>'; print_r($_SERVER); echo '</pre>';
+
 /* openssl settings see http://www.php.net/manual/en/function.openssl-csr-new.php */
 $settings['config']['cnf']                = array('config'=>'openssl.cnf',
                                                   'x509_extensions'=>'usr_cert');
@@ -97,9 +99,9 @@ function create($settings, $openssl)
  $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'] = $k['key'];
 
  /* Create certificate */
- $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'] = $openssl->handleCertificate($settings,
-                                                                                 $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
-                                                                                 $_SERVER['REMOTE_ADDR']);
+ $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'] = $openssl->createx509($settings,
+                                                                          $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                                                                          $_SERVER['REMOTE_ADDR']);
 }
 
 /*
@@ -118,29 +120,22 @@ function sign($data, $key, $pass, $certificate, $openssl)
  $boddy .= "--$boundary\n";
  $boddy .= "Content-Type: text/plain; charset=\"iso-8859-1\"\n";
  $boddy .= "Content-Transfer-Encoding: quoted-printable\n\n";
- $boddy .= $_POST['message']."\n\n";
+ $boddy .= combine(helper($_POST['message'], $openssl))."\n\n";
  $boddy .= "--$boundary--\n";
  $msg = 'msg.txt';
  $signed = 'signed.txt';
  $fp = fopen('tmp/'.$msg, "w");
  fwrite($fp, $boddy);
  fclose($fp);
- if (openssl_pkcs7_sign($msg, 'tmp/'.$signed, 'tmp/cert',
-    array($_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'], $_SERVER['REMOTE_ADDR']),
-    array("To" => $_POST['email'],
-         "From: jQuery.pidCrypt <jason.gerfen@gmail.com>",
-         "Subject" => "A test"), PKCS7_DETACHED)) {
-    exec(ini_get('sendmail_path') . ' < ' . 'tmp/'.$signed);
+ if (openssl_pkcs7_sign('tmp/'.$msg, 'tmp/'.$signed, $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
+                        array($_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                              $_SERVER['REMOTE_ADDR']),
+                        array("To" => $openssl->privDenc($_POST['email'], $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'], $_SERVER['REMOTE_ADDR']),
+                              "From: jQuery.pidCrypt <jason.gerfen@gmail.com>",
+                              "Subject" => "A test"))) {
+    exec(ini_get('sendmail_path').' < '.'tmp/'.$signed);
+   return array('signed'=>'Message sent');
   }
-/*
- $data = helper($data, $openssl); $a=array();
- if (count($data)>0){
-  foreach($data as $k => $v){
-   $a[$k] = $openssl->ssign($v, $key, $pass);
-  }
- }
- return $a;
-*/
 }
 
 /*
@@ -161,15 +156,19 @@ function response($array){
  */
 function helper($array, $openssl)
 {
- foreach($array as $key => $value) {
-  if (is_array($value)) {
-   foreach($value as $k => $v) {
-    $b[$k] = $openssl->privDenc($v, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'], $_SERVER['REMOTE_ADDR']);
+ if (is_array($array)) {
+  foreach($array as $key => $value) {
+   if (is_array($value)) {
+    foreach($value as $k => $v) {
+     $b[$k] = $openssl->privDenc($v, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'], $_SERVER['REMOTE_ADDR']);
+    }
+    $a[$key] = combine($b);
+   } else {
+    $a[$key] = $openssl->privDenc($value, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'], $_SERVER['REMOTE_ADDR']);
    }
-   $a[$key] = combine($b);
-  } else {
-   $a[$key] = $openssl->privDenc($value, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'], $_SERVER['REMOTE_ADDR']);
   }
+ } else {
+  $a = $openssl->privDenc($array, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'], $_SERVER['REMOTE_ADDR']);
  }
  return $a;
 }
@@ -180,8 +179,16 @@ function helper($array, $openssl)
  */
 function combine($array) {
  $a = '';
- foreach($array as $k => $v) {
-  $a .= $v;
+ if (is_array($array)){
+  foreach($array as $k => $v) {
+   if (is_array($v)) {
+    combine($array);
+   } else {
+    $a .= $v;
+   }
+  }
+ } else {
+  $a = $array;
  }
  return $a;
 }
@@ -189,19 +196,21 @@ function combine($array) {
 /*
  * Use these if json_encode not available
  */
-function arr2json( $array )
+function arr2json($array)
 {
- foreach( $array as $key => $value ) $json[] = $key . ':' . php2js( $value );
- if( count( $json ) > 0 ) return '{' . implode( ',', $json ) . '}';
- else return '';
+ if (is_array($array)) {
+  foreach($array as $key => $value) $json[] = $key . ':' . php2js($value);
+  if(count($json)>0) return '{'.implode(',',$json).'}';
+  else return '';
+ }
 }
 
-function php2js( $value )
+function php2js($value)
 {
- if( is_array( $value ) ) return arr2json( $val );
- if( is_string( $value ) ) return '"' . addslashes( $value ) . '"';
- if( is_bool( $value ) ) return 'Boolean(' . (int) $value . ')';
- if( is_null( $value ) ) return '""';
+ if(is_array($value)) return arr2json($val);
+ if(is_string($value)) return '"'.addslashes($value).'"';
+ if(is_bool($value)) return 'Boolean('.(int) $value.')';
+ if(is_null($value)) return '""';
  return $value;
 }
 
