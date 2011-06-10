@@ -40,6 +40,7 @@
    </blockquote>
   </p>
 
+  <!-- example using default method -->
   <script>
    var $j = jQuery.noConflict();
    $j(document).ready(function() {
@@ -48,17 +49,17 @@
   </script>
   <div id="contact-form" class="clearfix">
    <h3>Public key encryption example</h3>
-   <form id="cc" name="cc" style="cc" method="post" action="proxy.php">
+   <form id="cc" name="cc" style="cc" method="post" action="tests/default.php">
     <label for="name">Name: <span class="required">*</span></label>
-     <input type="text" id="name" name="name" value="" placeholder="John Doe" required="required" autofocus="autofocus" />
+     <input type="text" id="name" name="name" value="" placeholder="John Doe" required="required" />
     <label for="email">Email Address: <span class="required">*</span></label>
      <input type="email" id="email" name="email" value="" placeholder="johndoe@example.com" required="required" />
     <label for="type">Visa: </label>
-     <input name="type" id="type" value="visa" type="radio" class="data" />
+     <input name="type" id="type" value="visa" type="radio" class="data" checked="checked" required="required" />
     <label for="type">Mastercard: </label>
-     <input name="type" id="type" value="mastercard" type="radio" class="data" />
+     <input name="type" id="type" value="mastercard" type="radio" class="data" required="required" />
     <label for="type">American Express: </label>
-     <input name="type" id="type" value="americanexpress" type="radio" class="data" />
+     <input name="type" id="type" value="americanexpress" type="radio" class="data" required="required" />
     <label for="card-number">Card number: <span class="required">*</span></label>
      <input type="text" name="card-number" id="card-number" value="" placeholder="1234567890" required="required" />
     <label for="message">Message: <span class="required">*</span></label>
@@ -69,63 +70,50 @@
    </form>
   </div>
 
- <script>
-  var $j = jQuery.noConflict();
-  $j(document).ready(function() {
-   $j('#signing').pidCrypt('sign',{debug:true});
-  });
- </script>
- <div id="contact-form" class="clearfix">
-  <h3>Digitally sign email message</h3>
-  <form id="signing" name="signing" method="post" action="proxy.php">
-   <label for="name">Name: <span class="required">*</span></label>
-    <input type="text" id="name" name="name" value="" placeholder="John Doe" required="required" autofocus="autofocus" />
-   <label for="email">Email Address: <span class="required">*</span></label>
-    <input type="email" id="email" name="email" value="" placeholder="johndoe@example.com" required="required" />
-   <label for="telephone">Telephone: </label>
-    <input type="tel" id="telephone" name="telephone" value="" />
-   <label for="enquiry">Enquiry: </label>
-    <select id="enquiry" name="enquiry">
-     <option value="general">General</option>
-     <option value="sales">Sales</option>
-     <option value="support">Support</option>
-    </select>
-   <label for="message">Message: <span class="required">*</span></label>
-    <textarea id="message" name="message" placeholder="Your message must be greater than 20 charcters" required="required" data-minlength="20"></textarea>
-   <span id="loading"></span>
-    <input type="submit" value="Sign &amp; Send" id="submit-button" />
-    <p id="req-field-desc"></p>
-  </form>
+  <!-- example using signing of email -->
+  <script>
+   var $j = jQuery.noConflict();
+   $j(document).ready(function() {
+    $j('#signing').pidCrypt('sign',{debug:true});
+   });
+  </script>
+  <div id="contact-form" class="clearfix">
+   <h3>Digitally sign email message</h3>
+   <form id="signing" name="signing" method="post" action="tests/sign.php">
+    <label for="name">Name: <span class="required">*</span></label>
+     <input type="text" id="name" name="name" value="" placeholder="John Doe" required="required" />
+    <label for="email">Email Address: <span class="required">*</span></label>
+     <input type="email" id="email" name="email" value="" placeholder="johndoe@example.com" required="required" />
+    <label for="message">Message: <span class="required">*</span></label>
+     <textarea id="message" name="message" placeholder="Your message must be greater than 20 charcters" required="required" data-minlength="20"></textarea>
+    <span id="loading"></span>
+     <input type="submit" value="Sign &amp; Send" id="submit-button" />
+     <p id="req-field-desc"></p>
+   </form>
+  </div>
+
+  <!-- example using signing and encrypting of email -->
+  <script>
+   var $j = jQuery.noConflict();
+   $j(document).ready(function() {
+    $j('#encrypt_sign').pidCrypt('encrypt_sign',{debug:true,reset:true});
+   });
+  </script>
+  <div id="contact-form" class="clearfix">
+   <h3>Sign and encrypt email</h3>
+   <form id="encrypt_sign" name="encrypt_sign" method="post" action="tests/encrypt_sign.php">
+    <label for="name">Name: <span class="required">*</span></label>
+     <input type="text" id="name" name="name" value="" placeholder="John Doe" required="required" />
+    <label for="email">Email Address: <span class="required">*</span></label>
+     <input type="email" id="email" name="email" value="" placeholder="johndoe@example.com" required="required" />
+    <label for="message">Message: <span class="required">*</span></label>
+     <textarea id="message" name="message" placeholder="Your message must be greater than 20 charcters" required="required" data-minlength="20"></textarea>
+    <span id="loading"></span>
+     <input type="submit" value="Sign &amp; Encrypt &amp; Send" id="submit-button" />
+     <p id="req-field-desc"></p>
+   </form>
+  </div>
  </div>
 
- <script>
-  var $j = jQuery.noConflict();
-  $j(document).ready(function() {
-   $j('#encrypt-sign').pidCrypt('sign_encrypt',{debug:true});
-  });
- </script>
- <div id="contact-form" class="clearfix">
-  <h3>Sign and encrypt email</h3>
-  <form id="sign-encrypt" name="sign-encrypt" method="post" action="proxy.php">
-   <label for="name">Name: <span class="required">*</span></label>
-    <input type="text" id="name" name="name" value="" placeholder="John Doe" required="required" autofocus="autofocus" />
-   <label for="email">Email Address: <span class="required">*</span></label>
-    <input type="email" id="email" name="email" value="" placeholder="johndoe@example.com" required="required" />
-   <label for="telephone">Telephone: </label>
-    <input type="tel" id="telephone" name="telephone" value="" />
-   <label for="enquiry">Enquiry: </label>
-    <select id="enquiry" name="enquiry">
-     <option value="general">General</option>
-     <option value="sales">Sales</option>
-     <option value="support">Support</option>
-    </select>
-   <label for="message">Message: <span class="required">*</span></label>
-    <textarea id="message" name="message" placeholder="Your message must be greater than 20 charcters" required="required" data-minlength="20"></textarea>
-   <span id="loading"></span>
-    <input type="submit" value="Sign &amp; Encrypt &amp; Send" id="submit-button" disabled="true" />
-    <p id="req-field-desc"></p>
-  </form>
- </div>
- </div>
 </body>
 </html>
