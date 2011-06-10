@@ -69,11 +69,12 @@ if (!empty($_POST)) {
   */
  if ($_POST['do']==='encrypt_sign') {
   $response = 'Data recieved and processed...<br/>';
-  $response .= response(sign(array('name'=>$_POST['name'],'email'=>$_POST['email'],
-                                   'message'=>$_POST['message']),
-                             $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
-                             $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
-                             $_SERVER['REMOTE_ADDR'], $openssl));
+  $response .= response(encrypt_sign(array('name'=>$_POST['name'],
+                                           'email'=>$_POST['email'],
+                                           'message'=>$_POST['message']),
+                                     $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                                     $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
+                                     $_SERVER['REMOTE_ADDR'], $openssl));
  } else {
   $response = 'No command recieved from XMLHttpRequest';
  }
@@ -121,10 +122,10 @@ function encrypt_sign($data, $key, $pass, $certificate, $openssl)
  $signed = '../tmp/signed.txt';
  $x = $openssl->encryptx509($msg, $signed, $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'],
                             array("To" => $openssl->privDenc($_POST['email'],
-                                                            $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
-                                                            $_SERVER['REMOTE_ADDR']),
-                                 "From: jQuery.pidCrypt <jason.gerfen@gmail.com>",
-                                 "Subject" => "A test"));
+                                                             $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                                                             $_SERVER['REMOTE_ADDR']),
+                                  "From" => "jQuery.pidCrypt <jason.gerfen@gmail.com>",
+                                  "Subject" => "A test"));
 /*
  $res = $openssl->signx509($msg, $signed, $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
                            array($_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],

@@ -125,7 +125,7 @@ function sign($data, $key, $pass, $certificate, $openssl)
                            array("To" => $openssl->privDenc($_POST['email'],
                                                             $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                                                             $_SERVER['REMOTE_ADDR']),
-                                 "From: jQuery.pidCrypt <jason.gerfen@gmail.com>",
+                                 "From" => "jQuery.pidCrypt <jason.gerfen@gmail.com>",
                                  "Subject" => "A test"));
  exec(ini_get('sendmail_path').' < '.$res);
  return array('signed'=>'Message sent');
