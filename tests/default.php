@@ -27,11 +27,11 @@ if (!is_object($openssl)) {
  exit('An error occured when initializing the OpenSSL class');
 }
 
-if ($_SERVER["HTTP_X_REQUESTED_WITH"]!=='XMLHttpRequest'){
+if (strcmp($_SERVER['HTTP_X_REQUESTED_WITH'], 'XMLHttpRequest')!==0){
  exit('An XMLHttpRequest was not made');
 }
 
-if (!strcmp($_SERVER['X-Alt-Referer'], 'jQuery.pidCrypt')){
+if (strcmp($_SERVER['HTTP_X_ALT_REFERER'], 'jQuery.pidCrypt')!==0){
  exit('The X-Alt-Referer information recieved is invalid');
 }
 
