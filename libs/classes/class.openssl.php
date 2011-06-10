@@ -6,7 +6,8 @@
  * Use RSA encrypt / decrypt functions
  * Use AES encrypt / decrypt functions
  * Parse x509 certificates
- * Use x509 certificate signing
+ * Generate and use x509 certificates for email signing
+ * Generate pkcs#12 certificates
  *
  * LICENSE: This source file is subject to version 3.01 of the GPL license
  * that is available through the world-wide-web at the following URI:
@@ -114,62 +115,49 @@ class openssl
  }
 
  /*!
-  * @function decodeCert
+  * @function parsex509
   * @abstract Public method of parsing x.509 certificate
   * @param $certificate file or string x.509 certificate file or string
   * @return array The decoded x.509 certificate parameters
   */
- public function decodeCert($certificate)
+ public function parsex509($certificate)
  {
   return openssl_x509_parse(openssl_x509_read($certificate));
  }
 
  /*!
-  * @function newCert
-  * @abstract Private function to generate a new x.509 certificate object
-  * @param $dn array Array of location information
-  * @param $private object Private key object used to create certificate
-  * @param $opt array Array of cipher specific options
-  * @return object The certificate object
+  * @function createx509
+  * @abstract Public method to create a signed x.509 certificate
+  * @param $o array An array of options for both DN and SSL configuration opts
+  * @param $p string The private key to create a new CSR with
+  * @param $x string The password originally used to create private key
+  * @return string The x.509 certificate
   */
- public function newCert($dn, $private, $opt)
- {
-  return ((is_array($opt))&&(!empty($opt))) ? openssl_csr_new($dn,
-                                                              $private,
-                                                              $opt) :
-                                              openssl_csr_new($dn, $private);
- }
-
- /*!
-  * @function sign
-  * @abstract Private function to sign a certificate request
-  * @param $csr object The x.509 certificate object
-  * @param $private object Private key object used to create certificate
-  * @param $password string Passphrase used to create private key object
-  * @param $days int Number of days certificate is valid for
-  * @param $ca array Misc. options
-  * @return object The PKCS#11 object
-  */
- public function sign($csr, $private, $password, $days, $opt, $ca=NULL)
- {
-  $a = openssl_pkey_get_private($private, $password);
-  return openssl_csr_sign($csr, $ca, $a, $days, $opt);
- }
-
- public function ssign($data, $private, $pass, $algo='sha512')
- {
-  $a = openssl_pkey_get_private($private, $pass);
-  openssl_sign($data, $b, $a, $algo);
-  return $b;
- }
-
- public function handleCertificate($o, $p, $x)
+ public function createx509($o, $p, $x)
  {
   $a = openssl_pkey_get_private($p, $x);
   $b = openssl_csr_new($o['dn'], $a, $o['config']);
   $c = openssl_csr_sign($b, null, $a, 365);
   openssl_x509_export($c, $d);
   return $d;
+ }
+
+ /*!
+  * @function createxpkcs12
+  * @abstract Export a pkcs12 file for client auth from the x.509 certificate
+  * @param $c string The x.509 certificate
+  * @param $k string The private key to generate a new pkcs#12 file
+  * @param $p string The password originally used to create private key
+  * @return string The pkcs#12 certificate
+  */
+ public function createpkcs12($c, $k, $p, $n='jQuery.pidCrypt', $f=false)
+ {
+  $key = openssl_pkey_get_private($k, $p);
+  ($f===false) ?
+   openssl_pkcs12_export($c, $r, $key, $p, array('friendly_name'=>
+                                                 'jQuery.pidCrypt')) :
+   openssl_pkcs12_export_to_file($c, $r, $key, $p, array('friendly_name'=>$n));
+  return $r;
  }
 
  /*!
