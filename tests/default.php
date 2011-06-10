@@ -27,7 +27,7 @@ if (!is_object($openssl)) {
  exit('An error occured when initializing the OpenSSL class');
 }
 
-if (!strcmp($_SERVER["HTTP_X_REQUESTED_WITH"], 'XMLHttpRequest')){
+if ($_SERVER["HTTP_X_REQUESTED_WITH"]!=='XMLHttpRequest'){
  exit('An XMLHttpRequest was not made');
 }
 
