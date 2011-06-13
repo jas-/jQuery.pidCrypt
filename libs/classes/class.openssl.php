@@ -47,9 +47,8 @@ class openssl
    $this->setDN($configuration);
    return;
   } else {
-   echo 'The openssl extensions are not loaded.';
    unset($instance);
-   exit;
+   exit('The openssl extensions are not loaded.');
   }
  }
 
@@ -143,6 +142,51 @@ class openssl
  }
 
  /*!
+  * @function signx509
+  * @abstract Use a x.509 certificate to sign data
+  * @param $fin string Path to file of email contents
+  * @param $fout string Path to file once signed
+  * @param $c string x.509 certificate used to sign email
+  * @param $p mixed Private key or array of private key and password
+  * @param $o array Array of header information regarding email
+  */
+ public function signx509($fin, $fout, $c, $p, $o)
+ {
+  openssl_pkcs7_sign($fin, $fout, $c, $p, $o);
+  return $fout;
+ }
+
+ /*!
+  * @function verifyx509
+  * @abstract Verify a signed message
+  * @param $fin string Path to file of email contents
+  * @param $f integer PKCS7 flag
+  * @param $fout string Path to file once signed
+  * @param $c string x.509 certificate used to sign email
+  * @param $p mixed Private key or array of private key and password
+  * @param $o array Array of header information regarding email
+  */
+ public function verifyx509($fin, $f=PKCS7_TEXT, $fout, $c, $p, $o)
+ {
+  openssl_pkcs7_verify($fin, $f, $fout, $c, $p, $o);
+  return $fout;
+ }
+
+ /*!
+  * @function encryptx509
+  * @abstract Use public key to encrypt email
+  * @param $fin string Path to file of email contents
+  * @param $fout string Path to file once signed
+  * @param $c string Public key used to encrypt data
+  * @param $o array Array of header information regarding email
+  */
+ public function encryptx509($fin, $fout, $k, $o)
+ {
+  openssl_pkcs7_encrypt($fin, $fout, $k, $o);
+  return $fout;
+ }
+
+ /*!
   * @function createxpkcs12
   * @abstract Export a pkcs12 file for client auth from the x.509 certificate
   * @param $c string The x.509 certificate
@@ -150,13 +194,14 @@ class openssl
   * @param $p string The password originally used to create private key
   * @return string The pkcs#12 certificate
   */
- public function createpkcs12($c, $k, $p, $n='jQuery.pidCrypt', $f=false)
+ public function createpkcs12($c, $k, $p,
+                              $a=array('friendly_name'=>'',
+                                       'extracerts'=>''), $f=false)
  {
   $key = openssl_pkey_get_private($k, $p);
   ($f===false) ?
-   openssl_pkcs12_export($c, $r, $key, $p, array('friendly_name'=>
-                                                 'jQuery.pidCrypt')) :
-   openssl_pkcs12_export_to_file($c, $r, $key, $p, array('friendly_name'=>$n));
+   openssl_pkcs12_export($c, $r, $key, $p, $a) :
+   openssl_pkcs12_export_to_file($c, $r, $key, $p, $a);
   return $r;
  }
 
