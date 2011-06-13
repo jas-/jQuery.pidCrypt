@@ -96,7 +96,7 @@
   <script>
    var $j = jQuery.noConflict();
    $j(document).ready(function() {
-    $j('#encrypt_sign').pidCrypt('encrypt_sign',{debug:true,reset:true});
+    $j('#encrypt_sign').pidCrypt('encrypt_sign',{debug:true});
    });
   </script>
   <div id="contact-form" class="clearfix">
@@ -110,6 +110,24 @@
      <textarea id="message" name="message" placeholder="Your message must be greater than 20 charcters" required="required" data-minlength="20"></textarea>
     <span id="loading"></span>
      <input type="submit" value="Sign &amp; Encrypt &amp; Send" id="submit-button" />
+     <p id="req-field-desc"></p>
+   </form>
+  </div>
+
+  <!-- using browser certificate authentication -->
+  <script>
+   var $j = jQuery.noConflict();
+   $j(document).ready(function() {
+    $j('#authenticate').pidCrypt('authenticate',{debug:true,reset:true});
+   });
+  </script>
+  <div id="contact-form" class="clearfix">
+   <h3>Certificate authentication</h3>
+   <form id="authenticate" name="authenticate" method="post" action="tests/authenticate.php">
+    <!--label for="pin">PIN: <span class="required">*</span></label>
+     <input type="password" id="pin" name="pin" value="" placeholder="Enter PIN to unlock certificate" required="required" /-->
+    <span id="loading"></span>
+     <input type="submit" value="Test authentication status" id="submit-button" /><br/>
      <p id="req-field-desc"></p>
    </form>
   </div>
