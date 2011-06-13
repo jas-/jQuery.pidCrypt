@@ -127,8 +127,18 @@ function sign($data, $key, $pass, $certificate, $openssl)
                                                             $_SERVER['REMOTE_ADDR']),
                                  "From" => "jQuery.pidCrypt <jason.gerfen@gmail.com>",
                                  "Subject" => "A test"));
- exec(ini_get('sendmail_path').' < '.$res);
- return array('signed'=>'Message sent');
+ return force($signed);
+}
+
+/* push to client */
+function force($file)
+{
+ header("Cache-Control: public");
+ header("Content-Description: File Transfer");
+ header("Content-Disposition: attachment; filename=$file");
+ header("Content-Type: application/pkcs7-mime");
+ header("Content-Transfer-Encoding: binary");
+ readfile($file);
 }
 
 /* Create mail message */

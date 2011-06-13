@@ -120,24 +120,33 @@ function encrypt_sign($data, $key, $pass, $certificate, $openssl)
 {
  $msg = setHeaders('../tmp/msg.txt', $openssl);
  $signed = '../tmp/signed.txt';
- $x = $openssl->encryptx509($msg, $signed, $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'],
+ $finished = '../tmp/email.txt';
+ $x = $openssl->encryptx509($msg, $signed, $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
                             array("To" => $openssl->privDenc($_POST['email'],
                                                              $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                                                              $_SERVER['REMOTE_ADDR']),
                                   "From" => "jQuery.pidCrypt <jason.gerfen@gmail.com>",
                                   "Subject" => "A test"));
-/*
- $res = $openssl->signx509($msg, $signed, $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
+ $res = $openssl->signx509($signed, $finished, $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
                            array($_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                                  $_SERVER['REMOTE_ADDR']),
                            array("To" => $openssl->privDenc($_POST['email'],
                                                             $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                                                             $_SERVER['REMOTE_ADDR']),
-                                 "From: jQuery.pidCrypt <jason.gerfen@gmail.com>",
+                                 "From:"=>"jQuery.pidCrypt <jason.gerfen@gmail.com>",
                                  "Subject" => "A test"));
- exec(ini_get('sendmail_path').' < '.$res);
- return array('signed'=>'Message sent');
-*/
+ return force($finished);
+}
+
+/* push to client */
+function force($file)
+{
+ header("Cache-Control: public");
+ header("Content-Description: File Transfer");
+ header("Content-Disposition: attachment; filename=$file");
+ header("Content-Type: application/pkcs7-mime");
+ header("Content-Transfer-Encoding: binary");
+ readfile($file);
 }
 
 /* Create mail message */
