@@ -126,6 +126,23 @@
      });
     }
     return true;
+   },
+
+   /* method to use installed certificate as authentication */
+   authenticate: function(options){
+    var opts = $.extend({}, defaults, options);
+    if (__dependencies(opts)){
+     opts.aes = setupAES();
+     handleKey(opts);
+     handleCert(opts);
+     opts.data['do'] = 'authenticate';
+     $('#'+opts.form).live('submit', function(e){
+      e.preventDefault();
+     (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
+      __do(opts);
+     });
+    }
+    return true;
    }
   };
 
@@ -255,10 +272,46 @@
    return false;
   }
 
+  /* get public key from server */
+  var getCert = function(options){
+   $.ajax({
+    data: 'k=true&u='+getItem(options.storage, 'uuid')+
+          '&i='+getItem(options.storage, 'iv'),
+    type: 'post',
+    url: options.proxy,
+    beforeSend: function(xhr) {
+     xhr.setRequestHeader('X-Alt-Referer', 'jQuery.pidCrypt');
+    },
+    success: function(response){
+     setItem(options.storage, 'certificate',
+             options.aes.encryptText(response,
+                                     getItem(options.storage, 'uuid'),
+                                     {nBits:256,salt:getItem(options.storage,
+                                                             'iv')}));
+    }
+   });
+   return false;
+  }
+
+  /* ask for pkcs12 certificate or use existing */
+  var handleCert = function(options){
+   (getItem(options.storage, 'certificate')&&(!options.reset)) ?
+    getItem(options.storage, 'certificate') : getCert(options);
+  }
+
+  /* use pkcs12 certificate after decrypt */
+  var useCert = function(options){
+   return options.aes.decryptText(getItem(options.storage, 'certificate'),
+                                  getItem(options.storage, 'uuid'),
+                                  {nBits:256,salt:getItem(options.storage,
+                                                          'iv')});
+  }
+
   /* remove client storage items */
   var _remove = function(options){
    (getItem(options.storage, 'uuid')) ? delItem(options.storage, 'uuid') : false;
-   (getItem(options.storage, 'uuid')) ? delItem(options.storage, 'pub') : false;
+   (getItem(options.storage, 'pub')) ? delItem(options.storage, 'pub') : false;
+   (getItem(options.storage, 'certificate')) ? delItem(options.storage, 'certificate') : false;
    (getItem(options.storage, 'iv')) ? delItem(options.storage, 'iv') : false;
   }
 
