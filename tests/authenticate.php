@@ -35,7 +35,6 @@ if (strcmp($_SERVER['HTTP_X_ALT_REFERER'], 'jQuery.pidCrypt')!==0){
  exit('The X-Alt-Referer information recieved is invalid');
 }
 
-//echo '<pre>'; print_r($_SESSION); echo '</pre>';
 if (!empty($_POST)) {
 
  /* make sure we have our necessary data */
@@ -70,7 +69,7 @@ if (!empty($_POST)) {
   * add it here (delete this because it returns the decrypted examples)
   */
  $response = 'Data recieved and processed...<br/>';
- //$response .= response(helper($_POST, $openssl));
+ $response .= authenticate($_POST['c'], $openssl);
  echo $response;
  exit;
 }
@@ -96,8 +95,22 @@ function create($settings, $openssl)
  $_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12'] = $openssl->createpkcs12($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
                                                                        $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                                                                        $_SERVER['REMOTE_ADDR']);
+}
 
-
+/*
+ * decode and authenticate using pkcs12 certificate
+ */
+function authenticate($cert, $openssl)
+{
+ $cert = base64_decode($cert);
+ $a = $openssl->readpkcs12($cert, $_SERVER['REMOTE_ADDR']);
+ echo $a['cert'].'<br/>';
+ echo $_SESSION[$_SERVER['REMOTE_ADDR'].-'certificate'];
+ if ($a['cert']===$_SESSION[$_SERVER['REMOTE_ADDR'].-'certificate']) {
+  return response(array('Authenticate'=>'true'));
+ } else {
+  return response(array('Authenticate'=>'false'));
+ }
 }
 
 /*
