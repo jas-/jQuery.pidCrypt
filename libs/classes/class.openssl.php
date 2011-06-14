@@ -187,7 +187,7 @@ class openssl
  }
 
  /*!
-  * @function createxpkcs12
+  * @function createpkcs12
   * @abstract Export a pkcs12 file for client auth from the x.509 certificate
   * @param $c string The x.509 certificate
   * @param $k string The private key to generate a new pkcs#12 file
@@ -196,12 +196,25 @@ class openssl
   */
  public function createpkcs12($c, $k, $p,
                               $a=array('friendly_name'=>'',
-                                       'extracerts'=>''), $f=false)
+                                       'extracerts'=>''), $f=false, $d=false)
  {
   $key = openssl_pkey_get_private($k, $p);
   ($f===false) ?
    openssl_pkcs12_export($c, $r, $key, $p, $a) :
    openssl_pkcs12_export_to_file($c, $r, $key, $p, $a);
+  return $r;
+ }
+
+ /*!
+  * @function readpkcs12
+  * @abstract Read a pkcs12 file into an array
+  * @param $c string The pkcs12 certificate
+  * @param $p string The password originally used to create pkcs12 certificate
+  * @return array The pkcs#12 certificate details
+  */
+ public function readpkcs12($c, $p)
+ {
+  openssl_pkcs12_read($c, $r, $p);
   return $r;
  }
 
