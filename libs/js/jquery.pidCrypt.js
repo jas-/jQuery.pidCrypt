@@ -87,8 +87,9 @@
      handlePub(opts);
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
-     (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
+      (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
       __do(opts);
+      __cleanup(opts);
      });
     }
     return true;
@@ -101,11 +102,12 @@
      opts.aes = setupAES();
      handleKey(opts);
      handlePub(opts);
-     opts.data['do'] = 'sign';
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
-     (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
+      opts.data['do'] = 'sign';
+      (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
       __do(opts);
+      __cleanup(opts);
      });
     }
     return true;
@@ -118,11 +120,12 @@
      opts.aes = setupAES();
      handleKey(opts);
      handlePub(opts);
-     opts.data['do'] = 'encrypt_sign';
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
-     (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
+      opts.data['do'] = 'encrypt_sign';
+      (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
       __do(opts);
+      __cleanup(opts);
      });
     }
     return true;
@@ -134,12 +137,15 @@
     if (__dependencies(opts)){
      opts.aes = setupAES();
      handleKey(opts);
+     handlePub(opts);
      handleCert(opts);
-     opts.data['do'] = 'authenticate';
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
-     (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
+      opts.data['do'] = 'authenticate';
+      opts.data['c'] = useCert(opts);
+      (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
       __do(opts);
+      __cleanup(opts);
      });
     }
     return true;
@@ -152,7 +158,7 @@
    a = (sizeChk(options.data)>0) ? $.extend({}, a, options.data) : a;
    (options.debug) ? _show(options, a) : false;
    $.ajax({
-    data: a,
+    data: options.data,
     type: options.type,
     url: options.proxy,
     context: options.id,
@@ -317,9 +323,9 @@
 
   /* get form elements */
   var getElements = function(opts){
-   var obj={};
-   $.each($('#'+opts.form+' :text, :password, :file, input:hidden, input:checkbox:checked, input:radio:checked, textarea, input[type="email"], input[type="url"], input[type="number"], input[type="range"], input[type="date"], input[type="month"], input[type="week"], input[type="time"], input[type="datetime"], input[type="datetime-local"], input[type="search"], input[type="color"]'), function(k, v){
-    if (validateString(v.value)){
+   var obj={};//:text, :password, :file, input:hidden, input:checkbox:checked, input:radio:checked, textarea, input[type="email"], input[type="url"], input[type="number"], input[type="range"], input[type="date"], input[type="month"], input[type="week"], input[type="time"], input[type="datetime"], input[type="datetime-local"], input[type="search"], input[type="color"]
+   $.each($('#'+opts.form+' > :input'), function(k, v){
+    if ((validateString(v.value))&&(validateString(v.name))){
      obj[v.name] = (parseInt(v.value.length)>80) ? strSplit(v.value) : v.value;
     }
    });
@@ -374,6 +380,11 @@
      }
     });
    }
+  }
+
+  /* unset selected form elements */
+  var __cleanup = function(options){
+   delete options.data;
   }
 
   /* use storage options to save form data */
