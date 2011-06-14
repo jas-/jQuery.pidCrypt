@@ -70,7 +70,7 @@ if (!empty($_POST)) {
   * add it here (delete this because it returns the decrypted examples)
   */
  $response = 'Data recieved and processed...<br/>';
- $response .= response(helper($_POST, $openssl));
+ //$response .= response(helper($_POST, $openssl));
  echo $response;
  exit;
 }
