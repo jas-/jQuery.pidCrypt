@@ -55,12 +55,12 @@ if (!empty($_POST)) {
 
   /* Because we want to avoid MITM use AES to encrypt public key first */
   if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
-   echo $_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12'];
+   echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12']);
    // until I can resolve the problems with the pidCrypt AES-CBC to
    // PHP's OpenSSL AES-CBC decryption formats this is disabled
    //echo $openssl->aesEnc($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'], $_POST['u'], $_POST['i'], false, 'aes-256-cbc');
   } else {
-   echo $_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12'];
+   echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12']);
   }
   exit;
  }
