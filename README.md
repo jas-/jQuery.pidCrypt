@@ -12,6 +12,8 @@
 * jQuery libraries (required - http://www.jquery.com)
 * pidCrypt RSA & AES libraries (required - https://www.pidder.com/pidcrypt/)
 * jQuery cookie plugin (optional - http://plugins.jquery.com/files/jquery.cookie.js.txt)
+* OpenSSL < 0.9.8
+* PHP < 5.3
 
 ## FEATURES:
 * HTML5 localStorage support
