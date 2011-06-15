@@ -104,8 +104,6 @@ function authenticate($cert, $openssl)
 {
  $cert = base64_decode($cert);
  $a = $openssl->readpkcs12($cert, $_SERVER['REMOTE_ADDR']);
- echo 'DECODED: '.$a['cert'].'<br/>';
- echo 'SESSION: '.$_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'];
  if ($a['cert']===$_SESSION[$_SERVER['REMOTE_ADDR'].-'certificate']) {
   return response(array('Authenticate'=>'true'));
  } else {
