@@ -70,7 +70,9 @@ if (!empty($_POST)) {
  if ($_POST['do']==='sign') {
   $response = 'Data recieved and processed...<br/>';
   $response .= response(sign(array('name'=>$_POST['name'],'email'=>$_POST['email'],
-                                   'message'=>$_POST['message']),
+                                   'message'=>$openssl->privDenc($_POST['message'],
+                                                                 $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                                                                 $_SERVER['REMOTE_ADDR'])),
                              $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                              $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
                              $_SERVER['REMOTE_ADDR'], $openssl));
@@ -78,6 +80,7 @@ if (!empty($_POST)) {
   $response = 'No command recieved from XMLHttpRequest';
  }
  echo $response;
+ exit;
 }
 
 /*
@@ -117,8 +120,8 @@ function create($settings, $openssl)
  */
 function sign($data, $key, $pass, $certificate, $openssl)
 {
- $msg = setHeaders('../tmp/msg.txt', $openssl);
- $signed = '../tmp/signed.txt';
+ $msg = setHeaders('/tmp/msg.txt', $openssl);
+ $signed = '/tmp/signed.txt';
  $res = $openssl->signx509($msg, $signed, $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
                            array($_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                                  $_SERVER['REMOTE_ADDR']),
