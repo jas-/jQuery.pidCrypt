@@ -56,7 +56,8 @@ if (!empty($_POST)) {
    echo $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'];
    // until I can resolve the problems with the pidCrypt AES-CBC to
    // PHP's OpenSSL AES-CBC decryption formats this is disabled
-   //echo $openssl->aesEnc($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'], $_POST['u'], $_POST['i'], false, 'aes-256-cbc');
+   //echo $openssl->aesEnc($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'],
+   //                      $_POST['u'], $_POST['i'], false, 'aes-256-cbc');
   } else {
    echo $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'];
   }
