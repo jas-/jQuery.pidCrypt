@@ -10,48 +10,6 @@
  *
  * Fork me @ https://www.github.com/jas-/jQuery.pidCrypt
  *
- * REQUIREMENTS:
- * - jQuery libraries (required - http://www.jquery.com)
- * - pidCrypt RSA & AES libraries (required - https://www.pidder.com/pidcrypt/)
- * - jQuery cookie plugin (optional - http://plugins.jquery.com/files/jquery.cookie.js.txt)
- *
- * FEATURES:
- * - HTML5 localStorage support
- * - HTML5 sessionStorage support
- * - HTML5 form elements
- * - Cookie support
- * - Debugging output
- *
- * METHODS:
- * - Default: Uses public key to encrypt form data prior to sending
- * - Sign: Uses public key to sign data being emailed to recipient
- * - Encypt_sign: Uses public key to encrypt, sign and send email to recipient
- *
- * OPTIONS:
- * - storage: HTML5 localStorage, sessionStorage and cookies supported
- * - callback: Optional function used once server recieves encrypted data
- * - reset: Prevent local caching of public key (forces server requests)
- * - debug: Appends debugging information
- *
- * EXAMPLES:
- * - Default usage using HTML5 localStorage
- * $('#form').pidCrypt();
- *
- * - Default Using HTML5 sessionStorage
- * $('#form').pidCrypt({storage:'sessionStorage'});
- *
- * - Default using cookies (requires the jQuery cookie plug-in)
- * $('#form').pidCrypt({storage:'cookie'});
- *
- * - Example of using the callback method to process server response
- * $('#form').pidCrypt({callback:function(){ console.log('foo'); }});
- *
- * - Disable local caching of public key
- * $('#form').pidCrypt({cache:false});
- *
- * - Enable debugging output
- * $('#form').pidCrypt({debug:true});
- *
  * Author: Jason Gerfen <jason.gerfen@gmail.com>
  * License: GPL (see LICENSE)
  *
@@ -95,7 +53,7 @@
     return true;
    },
 
-   /* method used to sign data using SSL certificate */
+   /* method used to sign email using PKCS#7 certificate */
    sign: function(options){
     var opts = $.extend({}, defaults, options);
     if (__dependencies(opts)){
@@ -113,7 +71,25 @@
     return true;
    },
 
-   /* method used to encrypt then sign data using public key & SSL certificate */
+   /* method of verifying PKCS#7 signed email */
+   verify: function(options){
+    var opts = $.extend({}, defaults, options);
+    if (__dependencies(opts)){
+     opts.aes = setupAES();
+     handleKey(opts);
+     handlePub(opts);
+     $('#'+opts.form).live('submit', function(e){
+      e.preventDefault();
+      opts.data['do'] = 'verify';
+      (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
+      __do(opts);
+      __cleanup(opts);
+     });
+    }
+    return true;
+   },
+
+   /* method used to encrypt then sign email using PKCS#7 certificate */
    encrypt_sign: function(options){
     var opts = $.extend({}, defaults, options);
     if (__dependencies(opts)){
@@ -131,7 +107,25 @@
     return true;
    },
 
-   /* method to use installed certificate as authentication */
+   /* method used to decrypt then and verify PKCS#7 email */
+   decrypt_verify: function(options){
+    var opts = $.extend({}, defaults, options);
+    if (__dependencies(opts)){
+     opts.aes = setupAES();
+     handleKey(opts);
+     handlePub(opts);
+     $('#'+opts.form).live('submit', function(e){
+      e.preventDefault();
+      opts.data['do'] = 'decrypt_verify';
+      (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
+      __do(opts);
+      __cleanup(opts);
+     });
+    }
+    return true;
+   },
+
+   /* method to use PKCS#12 certificate for authentication */
    authenticate: function(options){
     var opts = $.extend({}, defaults, options);
     if (__dependencies(opts)){
@@ -158,7 +152,7 @@
    a = (sizeChk(options.data)>0) ? $.extend({}, a, options.data) : a;
    (options.debug) ? _show(options, a) : false;
    $.ajax({
-    data: options.data,
+    data: a,
     type: options.type,
     url: options.proxy,
     context: options.id,
