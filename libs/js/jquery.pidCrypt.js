@@ -262,6 +262,7 @@
      xhr.setRequestHeader('X-Alt-Referer', 'jQuery.pidCrypt');
     },
     success: function(response){
+     //setItem(options.storage, 'pub', response);
      setItem(options.storage, 'pub',
              options.aes.encryptText(response,
                                      getItem(options.storage, 'uuid'),
