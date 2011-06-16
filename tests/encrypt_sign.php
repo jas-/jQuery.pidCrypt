@@ -71,7 +71,9 @@ if (!empty($_POST)) {
   $response = 'Data recieved and processed...<br/>';
   $response .= response(encrypt_sign(array('name'=>$_POST['name'],
                                            'email'=>$_POST['email'],
-                                           'message'=>$_POST['message']),
+                                           'message'=>$openssl->privDenc($_POST['message'],
+                                                                         $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                                                                         $_SERVER['REMOTE_ADDR'])),
                                      $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                                      $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
                                      $_SERVER['REMOTE_ADDR'], $openssl));
@@ -79,6 +81,7 @@ if (!empty($_POST)) {
   $response = 'No command recieved from XMLHttpRequest';
  }
  echo $response;
+ exit;
 }
 
 /*
@@ -118,9 +121,9 @@ function create($settings, $openssl)
  */
 function encrypt_sign($data, $key, $pass, $certificate, $openssl)
 {
- $msg = setHeaders('../tmp/msg.txt', $openssl);
- $signed = '../tmp/signed.txt';
- $finished = '../tmp/email.txt';
+ $msg = setHeaders('/tmp/msg.txt', $openssl);
+ $signed = '/tmp/signed.txt';
+ $finished = '/tmp/email.txt';
  $x = $openssl->encryptx509($msg, $signed, $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
                             array("To" => $openssl->privDenc($_POST['email'],
                                                              $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
