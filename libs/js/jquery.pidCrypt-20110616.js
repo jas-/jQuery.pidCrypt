@@ -27,7 +27,7 @@
    proxy:    $(this).attr('action'),  // Place holder for form action
    type:     $(this).attr('method'),  // Place holder for form method
    aes:      '',                      // Place holder for AES object
-   cache:    true,                    // Use caching?
+   reset:    false,                   // Store public key (caching)
    debug:    false,                   // Use debugging?
    data:     {},                      // Object used for signing methods
    callback: function() {}            // Optional callback once form processed
@@ -79,7 +79,7 @@
      handleKey(opts);
      handlePub(opts);
      handleEmail(opts);
-     setEmail(opts, 'signed');
+     setEmail(opts);
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
       opts.data['do'] = 'verify';
@@ -116,8 +116,6 @@
      opts.aes = setupAES();
      handleKey(opts);
      handlePub(opts);
-     handleEmail(opts);
-     setEmail(opts, 'decrypt_verify');
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
       opts.data['do'] = 'decrypt_verify';
@@ -170,7 +168,7 @@
       options.callback.call(x) : false;
     },
     complete: function(x){
-     (options.cache) ? _remove(options) : false;
+     (options.reset) ? _remove(options) : false;
     }
    });
    return false;
@@ -210,7 +208,7 @@
     });
    } else {
     return false;
-   }
+   }alert(x);
    return x;
   }
 
@@ -280,8 +278,9 @@
 
   /* ask for public key or use existing */
   var handlePub = function(options){
-   (getItem(options.storage, 'pub')&&(!options.cache)) ? getItem(options.storage,
+   (getItem(options.storage, 'pub')&&(!options.reset)) ? getItem(options.storage,
                                                                  'pub') :
+                                       //getPub(options);
                                        _get(options, {k:true}, 'pub');
   }
 
@@ -293,11 +292,52 @@
                                                           'iv')});
   }
 
+  /* get public key from server */
+  var getPub = function(options){
+   $.ajax({
+    data: 'k=true&u='+getItem(options.storage, 'uuid')+
+          '&i='+getItem(options.storage, 'iv'),
+    type: 'post',
+    url: options.proxy,
+    beforeSend: function(xhr) {
+     xhr.setRequestHeader('X-Alt-Referer', 'jQuery.pidCrypt');
+    },
+    success: function(response){
+     setItem(options.storage, 'pub',
+             options.aes.encryptText(response,
+                                     getItem(options.storage, 'uuid'),
+                                     {nBits:256,salt:getItem(options.storage,
+                                                             'iv')}));
+    }
+   });
+   return false;
+  }
+
+  /* get public key from server */
+  var getCert = function(options){
+   $.ajax({
+    data: 'k=true&u='+getItem(options.storage, 'uuid')+
+          '&i='+getItem(options.storage, 'iv'),
+    type: 'post',
+    url: options.proxy,
+    beforeSend: function(xhr) {
+     xhr.setRequestHeader('X-Alt-Referer', 'jQuery.pidCrypt');
+    },
+    success: function(response){
+     setItem(options.storage, 'certificate',
+             options.aes.encryptText(response,
+                                     getItem(options.storage, 'uuid'),
+                                     {nBits:256,salt:getItem(options.storage,
+                                                             'iv')}));
+    }
+   });
+   return false;
+  }
+
   /* ask for pkcs12 certificate or use existing */
   var handleCert = function(options){
-   (getItem(options.storage, 'certificate')&&(!options.cache)) ?
-    getItem(options.storage, 'certificate') : _get(options,
-                                                   {c:true}, 'certificate');
+   (getItem(options.storage, 'certificate')&&(!options.reset)) ?
+    getItem(options.storage, 'certificate') : /*getCert(options);*/ _get(options, {c:true}, 'certificate');
   }
 
   /* use pkcs12 certificate after decrypt */
@@ -309,23 +349,42 @@
   }
 
   /* populate form with decrypted signed email */
-  var setEmail = function(options, name){
-   $('#'+options.form+' > textarea').val(useEmail(options, name));
+  var setEmail = function(options){
+   $('#'+options.form+' > textarea').val(useEmail(options));
+  }
+
+  /* get email from server */
+  var getEmail = function(options){
+   $.ajax({
+    data: 'e=true',
+    type: 'post',
+    url: options.proxy,
+    beforeSend: function(xhr) {
+     xhr.setRequestHeader('X-Alt-Referer', 'jQuery.pidCrypt');
+    },
+    success: function(response){
+     setItem(options.storage, 'signed',
+             options.aes.encryptText(response,
+                                     getItem(options.storage, 'uuid'),
+                                     {nBits:256,salt:getItem(options.storage,
+                                                             'iv')}));
+    }
+   });
+   return false;
   }
 
   /* ask for pkcs12 certificate or use existing */
   var handleEmail = function(options){
-   (getItem(options.storage, 'signed')&&(!options.cache)) ?
-    getItem(options.storage, 'signed') : _get(options, {e:true}, 'signed');
+   (getItem(options.storage, 'signed')&&(!options.reset)) ?
+    getItem(options.storage, 'signed') : /*getEmail(options);*/ _get(options, {e:true}, 'signed');
   }
 
-  /* Attempt to load email into form */
-  var useEmail = function(options, name){
-   return (getItem(options.storage)) ?
-            options.aes.decryptText(getItem(options.storage, name),
-                                    getItem(options.storage, 'uuid'),
-                                    {nBits:256,salt:getItem(options.storage,
-                                                            'iv')}) : false;
+  /* use pkcs12 certificate after decrypt */
+  var useEmail = function(options){
+   return options.aes.decryptText(getItem(options.storage, 'signed'),
+                                  getItem(options.storage, 'uuid'),
+                                  {nBits:256,salt:getItem(options.storage,
+                                                          'iv')});
   }
 
   /* remove client storage items */
@@ -338,7 +397,7 @@
 
   /* get form elements */
   var getElements = function(opts){
-   var obj={};
+   var obj={};//:text, :password, :file, input:hidden, input:checkbox:checked, input:radio:checked, textarea, input[type="email"], input[type="url"], input[type="number"], input[type="range"], input[type="date"], input[type="month"], input[type="week"], input[type="time"], input[type="datetime"], input[type="datetime-local"], input[type="search"], input[type="color"]
    $.each($('#'+opts.form+' > :input'), function(k, v){
     if ((validateString(v.value))&&(validateString(v.name))){
      obj[v.name] = (parseInt(v.value.length)>80) ? strSplit(v.value) : v.value;

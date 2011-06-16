@@ -42,6 +42,7 @@ if (!empty($_POST)) {
      (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key']))||
      (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']))){
   create($settings, $openssl);
+  write('/tmp/cert.pem', $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']);
  }
 
  /*
@@ -63,12 +64,23 @@ if (!empty($_POST)) {
   exit;
  }
 
+ /* does an existing signed email exist? */
+ if ((!empty($_POST['e']))&&($_POST['e']==='true')) {
+  if (file_exists('/tmp/signed.txt')) {
+   echo file_get_contents('/tmp/signed.txt');
+  }
+  exit;
+ }
+
  /*
   * If you wish to do anything further such as add a response that the data was recieved by the server etc
   * add it here (delete this because it returns the decrypted examples)
   */
  if ($_POST['do']==='verify') {
   $response = 'Data recieved and processed...<br/>';
+  print_r($openssl->verifyx509(write('/tmp/signed.txt', combine(helper($_POST['message'],
+                                                                       $openssl))),
+                               '/tmp/cert.pem'));
 /*
   $response .= response(sign(array('name'=>$_POST['name'],'email'=>$_POST['email'],
                                    'message'=>$openssl->privDenc($_POST['message'],
@@ -162,6 +174,14 @@ function setHeaders($file, $openssl) {
  fwrite($fp, $boddy);
  fclose($fp);
  return $file;
+}
+
+/* write out the PEM */
+function write($file, $cert)
+{
+ $fp = fopen($file, "w+");
+ fwrite($fp, $cert);
+ fclose($fp);
 }
 
 /*

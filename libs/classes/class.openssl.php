@@ -166,8 +166,9 @@ class openssl
   * @param $p mixed Private key or array of private key and password
   * @param $o array Array of header information regarding email
   */
- public function verifyx509($fin, $f=PKCS7_TEXT, $fout, $c, $p, $o)
- {
+ public function verifyx509($fin, $fout, $c=array(), $p=null, $o=null,
+                            $f=PKCS7_TEXT)
+ { echo '<pre>'; print_r(func_get_args()); echo '</pre>';
   openssl_pkcs7_verify($fin, $f, $fout, $c, $p, $o);
   return $fout;
  }

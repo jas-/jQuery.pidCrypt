@@ -54,6 +54,25 @@ if (!empty($_POST)) {
 
   /* Because we want to avoid MITM use AES to encrypt public key first */
   if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
+   echo $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'];
+   // until I can resolve the problems with the pidCrypt AES-CBC to
+   // PHP's OpenSSL AES-CBC decryption formats this is disabled
+   //echo $openssl->aesEnc($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'], $_POST['u'], $_POST['i'], false, 'aes-256-cbc');
+  } else {
+   echo $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'];
+  }
+  exit;
+ }
+
+ /*
+  * PKCS#12 certificate
+  * If you used a database to store existing certificates
+  * add the support after this conditional
+  */
+ if ((!empty($_POST['c']))&&($_POST['c']==='true')) {
+
+  /* Because we want to avoid MITM use AES to encrypt public key first */
+  if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
    echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12']);
    // until I can resolve the problems with the pidCrypt AES-CBC to
    // PHP's OpenSSL AES-CBC decryption formats this is disabled
@@ -63,6 +82,7 @@ if (!empty($_POST)) {
   }
   exit;
  }
+
 
  /*
   * If you wish to do anything further such as add a response that the data was recieved by the server etc
