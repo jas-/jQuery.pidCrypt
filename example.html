@@ -70,7 +70,7 @@
    </form>
   </div>
 
-  <!-- example using signing of email -->
+  <!-- example using PKCS#7 to sign email -->
   <script>
    var $j = jQuery.noConflict();
    $j(document).ready(function() {
@@ -88,6 +88,24 @@
      <textarea id="message" name="message" placeholder="Your message must be greater than 20 charcters" required="required" data-minlength="20"></textarea>
     <span id="loading"></span>
      <input type="submit" value="Sign &amp; Send" id="submit-button" />
+     <p id="req-field-desc"></p>
+   </form>
+  </div>
+
+  <!-- example using PKCS#7 to validate signed email -->
+  <script>
+   var $j = jQuery.noConflict();
+   $j(document).ready(function() {
+    $j('#verify').pidCrypt('verify',{debug:true});
+   });
+  </script>
+  <div id="contact-form" class="clearfix">
+   <h3>Digitally sign email message</h3>
+   <form id="verify" name="verify" method="post" action="tests/verify.php">
+    <label for="message">Message: <span class="required">*</span></label>
+     <textarea id="message" name="message" placeholder="Your message must be greater than 20 charcters" required="required" data-minlength="20"></textarea>
+    <span id="loading"></span>
+     <input type="submit" value="Send &amp; Verify" id="submit-button" />
      <p id="req-field-desc"></p>
    </form>
   </div>
@@ -110,6 +128,24 @@
      <textarea id="message" name="message" placeholder="Your message must be greater than 20 charcters" required="required" data-minlength="20"></textarea>
     <span id="loading"></span>
      <input type="submit" value="Sign &amp; Encrypt &amp; Send" id="submit-button" />
+     <p id="req-field-desc"></p>
+   </form>
+  </div>
+
+  <!-- example using PKCS#7 to decrypt & validate signed email -->
+  <script>
+   var $j = jQuery.noConflict();
+   $j(document).ready(function() {
+    $j('#decrypt_verify').pidCrypt('decrypt_verify',{debug:true});
+   });
+  </script>
+  <div id="contact-form" class="clearfix">
+   <h3>Digitally sign email message</h3>
+   <form id="decrypt_verify" name="decrypt_verify" method="post" action="tests/decrypt_verify.php">
+    <label for="message">Message: <span class="required">*</span></label>
+     <textarea id="message" name="message" placeholder="Your message must be greater than 20 charcters" required="required" data-minlength="20"></textarea>
+    <span id="loading"></span>
+     <input type="submit" value="Send, Decrypt &amp; Verify" id="submit-button" />
      <p id="req-field-desc"></p>
    </form>
   </div>
