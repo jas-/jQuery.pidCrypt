@@ -494,8 +494,10 @@
   var _output = function(options){
    if (options.debug) {
     $('#'+options.form).append('<b>Processing form contents...</b><br/>');
-    $('#'+options.form).append('&nbsp;<i>UUID:</i> '+getItem(options.storage, 'uuid')+'<br/>');
-    $('#'+options.form).append('&nbsp;<i>IV:</i> '+getItem(options.storage, 'iv')+'<br/>');
+    $('#'+options.form).append('&nbsp;<i>UUID:</i> '+
+                                getItem(options.storage, 'uuid')+'<br/>');
+    $('#'+options.form).append('&nbsp;<i>IV:</i> '+
+                                getItem(options.storage, 'iv')+'<br/>');
     $('#'+options.form).append('&nbsp;<i>KEY:</i> '+usePub(options)+'<br/>');
    }
    return true;
