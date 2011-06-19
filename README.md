@@ -114,7 +114,7 @@
 ## TODO:
 * Add PKCS#7 signed email validation
 * Add PKCS#7 email decryption and signed validation
-* Resovle issue with authenticate method regarding discrepencies with PKCS#12 certificates
+* Add stricter conditional regarding authentication with PKCS#12 certificates
 
 Author: Jason Gerfen <jason.gerfen@gmail.com>
 License: GPL (see LICENSE)
