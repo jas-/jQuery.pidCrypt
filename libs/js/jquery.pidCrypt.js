@@ -185,10 +185,11 @@
      handleKey(opts);
      handlePub(opts);
      handleCert(opts);
+     opts.data['do'] = 'authenticate';
+     opts.data['c'] = useCert(opts);
+     (useCert(opts)) ? __do(opts) : false;
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
-      opts.data['do'] = 'authenticate';
-      opts.data['c'] = useCert(opts);
       (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
       __do(opts);
      });
@@ -219,6 +220,7 @@
     success: function(x){
      (options.debug) ?
       $('#'+options.form).append('<b>Server response:</b><br/>&nbsp;'+x) : false;
+     //(a['do']==='sign') ? location.href = x : false;
      ((options.callback)&&($.isFunction(options.callback))) ?
       options.callback.call(x) : false;
     },
