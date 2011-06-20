@@ -182,14 +182,14 @@
      opts.aes = setupAES();
      handleKey(opts);
      handlePub(opts);
-     handleCert(opts);
-     opts.data['do'] = 'authenticate';
-     opts.data['c'] = useCert(opts);
-     (useCert(opts)) ? __do(opts) : false;
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
+      handleCert(opts);
+      opts.data['do'] = 'authenticate';
+      opts.data['c'] = (getItem(opts.storage, 'certificate')) ?
+       useCert(opts) : false;
       (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
-      __do(opts);
+      (useCert(opts)) ? __do(opts) : false;
      });
     }
     return true;
@@ -235,7 +235,7 @@
    *           item within specified storage mechanism
    */
   var _get = function(options, args, name){
-   var x = _serialize(args);
+   var x = (typeof args==='object') ? _serialize(args) : args;
    $.ajax({
     data: x,
     type: 'post',
@@ -265,7 +265,7 @@
      if (typeof b==='object'){
       _serialize(b);
      } else {
-      x+=a+'='+b;
+      x+=a+'='+b+'&';
      }
     });
    } else {
@@ -371,8 +371,11 @@
    * @abstract Returns PKCS#12 certificate from server or client storage options
    */
   var handleCert = function(options){
+   var a = encryptObj(options, getElements(options));
+   options.data['c']=true;
+   a = (sizeChk(options.data)>0) ? $.extend({}, a, options.data) : a;
    (getItem(options.storage, 'certificate')&&(options.cache)) ?
-    getItem(options.storage, 'certificate') : _get(options, {c:true},
+    getItem(options.storage, 'certificate') : _get(options, _serialize(a),
                                                    'certificate');
   }
 
