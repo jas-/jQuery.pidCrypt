@@ -41,8 +41,9 @@ if (!empty($_POST)) {
  if ((empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key']))||
      (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key']))||
      (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']))||
-     (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12']))){
-  create($settings, $openssl);
+     (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12']))||
+     (!empty($_POST['pin']))&&(empty($_POST['do']))){
+  create($settings, $openssl, $_POST['pin']);
  }
 
  /*
@@ -50,7 +51,7 @@ if (!empty($_POST)) {
   * If you used a database to store existing keys
   * add the support after this conditional
   */
- if ((!empty($_POST['k']))&&($_POST['k']==='true')) {
+ if ((!empty($_POST['k']))&&($_POST['k']==='true')||(!empty($_POST['pin']))&&(!empty($_POST['do']))) {
 
   /* Because we want to avoid MITM use AES to encrypt public key first */
   if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
@@ -69,7 +70,7 @@ if (!empty($_POST)) {
   * If you used a database to store existing certificates
   * add the support after this conditional
   */
- if ((!empty($_POST['c']))&&($_POST['c']==='true')) {
+ if ((!empty($_POST['c']))&&($_POST['c']==='true')&&(!empty($_POST['pin']))&&(empty($_POST['do']))) {
 
   /* Because we want to avoid MITM use AES to encrypt public key first */
   if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
@@ -88,8 +89,11 @@ if (!empty($_POST)) {
   * If you wish to do anything further such as add a response that the data was recieved by the server etc
   * add it here (delete this because it returns the decrypted examples)
   */
- $response = 'Data recieved and processed...<br/>';
- $response .= authenticate($_POST['c'], $openssl);
+ if ((!empty($_POST['do']))&&($_POST['do']==='authenticate')&&(!empty($_POST['c']))) {
+  $response = authenticate($_POST['c'], $openssl);
+ } else {
+  $response = 'No command recieved from XMLHttpRequest';
+ }
  echo $response;
  exit;
 }
@@ -97,24 +101,37 @@ if (!empty($_POST)) {
 /*
  * Create private/public/certificate for referring machine (stored in session)
  */
-function create($settings, $openssl)
+function create($settings, $openssl, $pin='')
 {
+
+ /* decrypt pin if it exists */
+ $pin = $openssl->privDenc($pin, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                           $_SERVER['REMOTE_ADDR']);
+
  /* Generate the private key */
- $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'] = $openssl->genPriv($_SERVER['REMOTE_ADDR']);
+ $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'] = (!empty($pin)) ?
+  $openssl->genPriv($pin) :
+  $openssl->genPriv($_SERVER['REMOTE_ADDR']);
 
  /* Get the public key */
  $k = $openssl->genPub();
  $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'] = $k['key'];
 
  /* Create certificate */
- $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'] = $openssl->createx509($settings,
-                                                                          $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
-                                                                          $_SERVER['REMOTE_ADDR']);
+ $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'] = (!empty($pin)) ?
+  $openssl->createx509($settings, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                       $pin) :
+  $openssl->createx509($settings, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                       $_SERVER['REMOTE_ADDR']);
 
  /* Create pkcs12 password protected certificate for authenticaiton */
- $_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12'] = $openssl->createpkcs12($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
-                                                                       $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
-                                                                       $_SERVER['REMOTE_ADDR']);
+ $_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12'] = (!empty($pin)) ?
+  $openssl->createpkcs12($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
+                         $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                         $pin) :
+  $openssl->createpkcs12($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
+                         $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                         $_SERVER['REMOTE_ADDR']);
 }
 
 /*
@@ -123,9 +140,13 @@ function create($settings, $openssl)
 function authenticate($cert, $openssl)
 {
  $a = $openssl->readpkcs12($_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12'],
-                           $_SERVER['REMOTE_ADDR']);
- if ($a['cert']===$_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']) {
-  return response(array('Authenticate'=>'true'));
+                           $_POST['pin']);
+ if ((!empty($cert))&&($cert!==false)) {
+  if ($a['cert']===base64_decode($cert)) {
+   return response(array('Authenticate'=>'true'));
+  } else {
+   return response(array('Authenticate'=>'false'));
+  }
  } else {
   return response(array('Authenticate'=>'false'));
  }
