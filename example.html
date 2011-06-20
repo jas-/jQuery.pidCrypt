@@ -25,7 +25,7 @@
  <script src="libs/js/pidCrypt/javascripts/compressed/aes_cbc_c.js"></script>
 
  <!-- jQuery.pidCrypt plugin library -->
- <script src="libs/js/jquery.pidCrypt.js"></script>
+ <script src="libs/js/jquery.pidCrypt.min.js"></script>
 </head>
 <body>
  <div style="width:70%; word-wrap:break-word">
@@ -74,7 +74,7 @@
   <script>
    var $j = jQuery.noConflict();
    $j(document).ready(function() {
-    $j('#signing').pidCrypt('sign',{debug:true});
+    $j('#signing').pidCrypt('sign',{debug:true,callback:function(){$j('#verify > #message').val($j(this)[0]);}});
    });
   </script>
   <div id="contact-form" class="clearfix">
@@ -115,7 +115,7 @@
   <script>
    var $j = jQuery.noConflict();
    $j(document).ready(function() {
-    $j('#encrypt_sign').pidCrypt('encrypt_sign',{debug:true});
+    $j('#encrypt_sign').pidCrypt('encrypt_sign',{debug:true,callback:function(){$j('#decrypt_verify > #message').val($j(this)[0]);}});
    });
   </script>
   <div id="contact-form" class="clearfix">
