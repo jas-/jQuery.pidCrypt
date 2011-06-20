@@ -73,12 +73,12 @@ if (!empty($_POST)) {
 
   /* Because we want to avoid MITM use AES to encrypt public key first */
   if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
-   echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12']);
+   echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']);
    // until I can resolve the problems with the pidCrypt AES-CBC to
    // PHP's OpenSSL AES-CBC decryption formats this is disabled
    //echo $openssl->aesEnc($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'], $_POST['u'], $_POST['i'], false, 'aes-256-cbc');
   } else {
-   echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12']);
+   echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']);
   }
   exit;
  }
@@ -122,8 +122,8 @@ function create($settings, $openssl)
  */
 function authenticate($cert, $openssl)
 {
- $cert = base64_decode($cert);
- $a = $openssl->readpkcs12($cert, $_SERVER['REMOTE_ADDR']);
+ $a = $openssl->readpkcs12($_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12'],
+                           $_SERVER['REMOTE_ADDR']);
  if ($a['cert']===$_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']) {
   return response(array('Authenticate'=>'true'));
  } else {
