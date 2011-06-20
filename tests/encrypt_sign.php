@@ -68,15 +68,14 @@ if (!empty($_POST)) {
   * add it here (delete this because it returns the decrypted examples)
   */
  if ($_POST['do']==='encrypt_sign') {
-  $response = 'Data recieved and processed...<br/>';
-  $response .= response(encrypt_sign(array('name'=>$_POST['name'],
-                                           'email'=>$_POST['email'],
-                                           'message'=>$openssl->privDenc($_POST['message'],
-                                                                         $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
-                                                                         $_SERVER['REMOTE_ADDR'])),
-                                     $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
-                                     $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
-                                     $_SERVER['REMOTE_ADDR'], $openssl));
+  $response = response(encrypt_sign(array('name'=>$_POST['name'],
+                                          'email'=>$_POST['email'],
+                                          'message'=>$openssl->privDenc($_POST['message'],
+                                                                        $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                                                                        $_SERVER['REMOTE_ADDR'])),
+                                    $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                                    $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
+                                    $_SERVER['REMOTE_ADDR'], $openssl));
  } else {
   $response = 'No command recieved from XMLHttpRequest';
  }
