@@ -42,7 +42,7 @@ if (!empty($_POST)) {
      (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key']))||
      (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']))||
      (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12']))||
-     (!empty($_POST['pin']))&&(empty($_POST['do']))){
+     (!empty($_POST['pin']))){
   create($settings, $openssl, $_POST['pin']);
  }
 
@@ -105,8 +105,11 @@ function create($settings, $openssl, $pin='')
 {
 
  /* decrypt pin if it exists */
- $pin = $openssl->privDenc($pin, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
-                           $_SERVER['REMOTE_ADDR']);
+ $pin = (empty($pin)) ?
+  $openssl->privDenc($pin, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                     $_SERVER['REMOTE_ADDR']) :
+  $openssl->privDenc($pin, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                     $pin);
 
  /* Generate the private key */
  $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'] = (!empty($pin)) ?
