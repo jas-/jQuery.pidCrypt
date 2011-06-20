@@ -111,7 +111,6 @@
      handleKey(opts);
      handlePub(opts);
      handleEmail(opts);
-     setEmail(opts, 'signed');
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
       opts.data['do'] = 'verify';
@@ -160,7 +159,6 @@
      handleKey(opts);
      handlePub(opts);
      handleEmail(opts);
-     setEmail(opts, 'decrypt_verify');
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
       opts.data['do'] = 'decrypt_verify';
@@ -220,7 +218,6 @@
     success: function(x){
      (options.debug) ?
       $('#'+options.form).append('<b>Server response:</b><br/>&nbsp;'+x) : false;
-     //(a['do']==='sign') ? location.href = x : false;
      ((options.callback)&&($.isFunction(options.callback))) ?
       options.callback.call(x) : false;
     },
@@ -420,15 +417,6 @@
                                   getItem(options.storage, 'uuid'),
                                   {nBits:256,salt:getItem(options.storage,
                                                           'iv')});
-  }
-
-  /**
-   * @function setEmail
-   * @abstract Attempt to set the value of textarea for PKCS#7 verification
-   *           with server
-   */
-  var setEmail = function(options, name){
-   $('#'+options.form+' > textarea').val(useEmail(options, name));
   }
 
   /**
