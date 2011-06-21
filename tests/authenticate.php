@@ -3,11 +3,6 @@
 /* session init */
 session_start();
 
-/* reset the ID for session fixation attacks */
-if (isset($_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'])) {
- session_regenerate_id();
-}
-
 /* does our configuration file exist? */
 if (!file_exists('config.php')) {
  exit('config.php file does not exist');
@@ -51,6 +46,14 @@ if (!empty($_POST)) {
  }
 
  /*
+  * Use locale/email/pin private key to decode pkcs#12 session
+  * varibale and compare pkcs#7 with pkcs#7 session
+  */
+ if ((!empty($_POST['do']))&&($_POST['do']==='authenticate')) {
+  exit(authenticate($_POST['c'], $openssl));
+ }
+
+ /*
   * public key?
   * If you used a database to store existing keys
   * add the support after this conditional
@@ -78,7 +81,7 @@ if (!empty($_POST)) {
                              $openssl->privDenc($_POST['email'],
                                                 $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                                                 $_SERVER['REMOTE_ADDR']),
-                       $settings);
+                             $settings);
   create($settings, $openssl, $_POST['pin'], true);
 
   /* Because we want to avoid MITM use AES to encrypt public key first */
@@ -98,7 +101,7 @@ if (!empty($_POST)) {
   * If you used a database to store existing certificates
   * add the support after this conditional
   */
- if ((!empty($_POST['c']))&&($_POST['c']==='true')&&(!empty($_POST['pin']))&&(empty($_POST['do']))) {
+ if (($_POST['c']==='true')&&(!empty($_POST['pin']))&&(empty($_POST['do']))) {
 
   if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
    echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']);
@@ -107,20 +110,6 @@ if (!empty($_POST)) {
   }
   exit;
  }
-
-
- /*
-  * If you wish to do anything further such as add a response that the data was recieved by the server etc
-  * add it here (delete this because it returns the decrypted examples)
-  */
- if ((!empty($_POST['do']))&&($_POST['do']==='authenticate')) {
-  $response = authenticate($_POST['c'], $openssl);
- } else {
-  $response = 'No command recieved from XMLHttpRequest';
- }
- echo $response;
- exit;
-
 }
 
 /*
@@ -128,7 +117,7 @@ if (!empty($_POST)) {
  */
 function create($settings, $openssl, $pin='', $reset=false)
 {
-
+ echo '<pre>'; print_r($_SESSION); echo '</pre>';
  $pin = (!empty($pin)) ?
   $openssl->privDenc($pin, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                      $_SERVER['REMOTE_ADDR']) : false;
@@ -157,6 +146,7 @@ function create($settings, $openssl, $pin='', $reset=false)
   $openssl->createpkcs12($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
                          $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                          $_SERVER['REMOTE_ADDR']);
+ echo '<pre>'; print_r($_SESSION); echo '</pre>';
 }
 
 /*
