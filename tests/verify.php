@@ -3,6 +3,11 @@
 /* session init */
 session_start();
 
+/* reset the ID for session fixation attacks */
+if (isset($_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'])) {
+ session_regenerate_id();
+}
+
 /* does our configuration file exist? */
 if (!file_exists('config.php')) {
  exit('config.php file does not exist');
@@ -79,7 +84,7 @@ if (!empty($_POST)) {
  if ($_POST['do']==='verify') {
   $response = 'Data recieved and processed...<br/>';
   print_r($openssl->verifyx509(write('/tmp/signed.txt', combine(helper($_POST['message'],
-                                                                       $openssl))),
+                                                                    $openssl))),
                                '/tmp/cert.pem'));
 /*
   $response .= response(sign(array('name'=>$_POST['name'],'email'=>$_POST['email'],
