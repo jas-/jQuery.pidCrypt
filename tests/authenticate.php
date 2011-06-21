@@ -45,8 +45,6 @@ if (!empty($_POST)) {
   create($settings, $openssl);
  }
 
-echo 'INITIAL:<pre>'; print_r($_SESSION); echo '</pre>';
-
  /*
   * public key?
   * If you used a database to store existing keys
@@ -67,10 +65,17 @@ echo 'INITIAL:<pre>'; print_r($_SESSION); echo '</pre>';
  }
 
  /* was a passphrase/pin specified? make a unique key pair */
- if ((!empty($_POST['pin']))&&(!empty($_POST['c']))&&($_POST['c']===true)) {
-  create(parsegeo(geolocation($_SERVER['PHP_SELF']), $_SERVER['PHP_SELF'],
-                  $settings));
-echo 'LOCATION BASED<pre>'; print_r($_SESSION); echo '</pre>';
+ if ((!empty($_POST['pin']))&&(!empty($_POST['cert']))&&
+     ($_POST['cert']==='true')&&(!empty($_POST['email']))) {
+
+  /* setup DN information specific to this user vs. computer */
+  $settings['dn'] = parsegeo(geolocation($_SERVER['REMOTE_ADDR']), $_SERVER['REMOTE_ADDR'],
+                             $openssl->privDenc($_POST['email'],
+                                                $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                                                $_SERVER['REMOTE_ADDR']),
+                       $settings);
+  create($settings, $openssl, $_POST['pin'], true);
+
   /* Because we want to avoid MITM use AES to encrypt public key first */
   if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
    echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']);
@@ -81,7 +86,6 @@ echo 'LOCATION BASED<pre>'; print_r($_SESSION); echo '</pre>';
    echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']);
   }
   exit;
-
  }
 
  /*
@@ -91,12 +95,8 @@ echo 'LOCATION BASED<pre>'; print_r($_SESSION); echo '</pre>';
   */
  if ((!empty($_POST['c']))&&($_POST['c']==='true')&&(!empty($_POST['pin']))&&(empty($_POST['do']))) {
 
-  /* Because we want to avoid MITM use AES to encrypt public key first */
   if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
    echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']);
-   // until I can resolve the problems with the pidCrypt AES-CBC to
-   // PHP's OpenSSL AES-CBC decryption formats this is disabled
-   //echo $openssl->aesEnc($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'], $_POST['u'], $_POST['i'], false, 'aes-256-cbc');
   } else {
    echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']);
   }
@@ -108,46 +108,44 @@ echo 'LOCATION BASED<pre>'; print_r($_SESSION); echo '</pre>';
   * If you wish to do anything further such as add a response that the data was recieved by the server etc
   * add it here (delete this because it returns the decrypted examples)
   */
- if ((!empty($_POST['do']))&&($_POST['do']==='authenticate')&&(!empty($_POST['c']))) {
+ if ((!empty($_POST['do']))&&($_POST['do']==='authenticate')) {
   $response = authenticate($_POST['c'], $openssl);
  } else {
   $response = 'No command recieved from XMLHttpRequest';
  }
  echo $response;
  exit;
+
 }
 
 /*
  * Create private/public/certificate for referring machine (stored in session)
  */
-function create($settings, $openssl, $pin='')
+function create($settings, $openssl, $pin='', $reset=false)
 {
 
- /* decrypt pin if it exists */
- $pin = (empty($pin)) ?
+ $pin = (!empty($pin)) ?
   $openssl->privDenc($pin, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
-                     $_SERVER['REMOTE_ADDR']) :
-  $openssl->privDenc($pin, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
-                     $pin);
+                     $_SERVER['REMOTE_ADDR']) : false;
 
  /* Generate the private key */
- $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'] = (!empty($pin)) ?
+ $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'] = (($pin!==false)&&($reset===true)) ?
   $openssl->genPriv($pin) :
   $openssl->genPriv($_SERVER['REMOTE_ADDR']);
 
  /* Get the public key */
  $k = $openssl->genPub();
  $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'] = $k['key'];
-
+//echo '<pre>'; print_r($settings); echo '</pre>';
  /* Create certificate */
- $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'] = (!empty($pin)) ?
+ $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'] = (($pin!==false)&&($reset===true)) ?
   $openssl->createx509($settings, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                        $pin) :
   $openssl->createx509($settings, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                        $_SERVER['REMOTE_ADDR']);
 
  /* Create pkcs12 password protected certificate for authenticaiton */
- $_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12'] = (!empty($pin)) ?
+ $_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12'] = (($pin!==false)&&($reset===true)) ?
   $openssl->createpkcs12($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
                          $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                          $pin) :
@@ -274,11 +272,11 @@ function geolocation($ip)
  return $ex;
 }
 
-function parsegeo($data, $ip, $config)
+function parsegeo($data, $ip, $email, $config)
 {
  $settings['organizationName'] = $ip;
  $settings['organizationalUnitName'] = $ip;
- $settings['emailAddress'] = $ip;
+ $settings['emailAddress'] = $email;
  $settings['localityName'] = (!empty($data['geoplugin_city'])) ?
                               $data['geoplugin_city'] :
                               $config['dn']['localityName'];
