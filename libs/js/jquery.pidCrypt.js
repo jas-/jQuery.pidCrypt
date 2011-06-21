@@ -189,7 +189,7 @@
       opts.data['c'] = (getItem(opts.storage, 'certificate')) ?
        useCert(opts) : false;
       (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
-      (useCert(opts)) ? __do(opts) : false;
+      __do(opts);
      });
     }
     return true;
