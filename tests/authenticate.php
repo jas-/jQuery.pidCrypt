@@ -41,17 +41,18 @@ if (!empty($_POST)) {
  if ((empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key']))||
      (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key']))||
      (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']))||
-     (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12']))||
-     (!empty($_POST['pin']))){
-  create($settings, $openssl, $_POST['pin']);
+     (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-pkcs12']))){
+  create($settings, $openssl);
  }
+
+echo 'INITIAL:<pre>'; print_r($_SESSION); echo '</pre>';
 
  /*
   * public key?
   * If you used a database to store existing keys
   * add the support after this conditional
   */
- if ((!empty($_POST['k']))&&($_POST['k']==='true')||(!empty($_POST['pin']))&&(!empty($_POST['do']))) {
+ if ((!empty($_POST['k']))&&($_POST['k']==='true')) {
 
   /* Because we want to avoid MITM use AES to encrypt public key first */
   if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
@@ -63,6 +64,24 @@ if (!empty($_POST)) {
    echo $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'];
   }
   exit;
+ }
+
+ /* was a passphrase/pin specified? make a unique key pair */
+ if ((!empty($_POST['pin']))&&(!empty($_POST['c']))&&($_POST['c']===true)) {
+  create(parsegeo(geolocation($_SERVER['PHP_SELF']), $_SERVER['PHP_SELF'],
+                  $settings));
+echo 'LOCATION BASED<pre>'; print_r($_SESSION); echo '</pre>';
+  /* Because we want to avoid MITM use AES to encrypt public key first */
+  if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
+   echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']);
+   // until I can resolve the problems with the pidCrypt AES-CBC to
+   // PHP's OpenSSL AES-CBC decryption formats this is disabled
+   //echo $openssl->aesEnc($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'], $_POST['u'], $_POST['i'], false, 'aes-256-cbc');
+  } else {
+   echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']);
+  }
+  exit;
+
  }
 
  /*
@@ -243,6 +262,37 @@ function php2js($value)
  if(is_bool($value)) return 'Boolean('.(int) $value.')';
  if(is_null($value)) return '""';
  return $value;
+}
+
+function geolocation($ip)
+{
+ $opts = array('http'=>array('method'=>'GET',
+                             'header'=>'Accept-language: en\r\n'));
+ $context = stream_context_create($opts);
+ $ex = unserialize(file_get_contents('http://www.geoplugin.net/php.gp?ip='.$ip,
+                                     false, $context));
+ return $ex;
+}
+
+function parsegeo($data, $ip, $config)
+{
+ $settings['organizationName'] = $ip;
+ $settings['organizationalUnitName'] = $ip;
+ $settings['emailAddress'] = $ip;
+ $settings['localityName'] = (!empty($data['geoplugin_city'])) ?
+                              $data['geoplugin_city'] :
+                              $config['dn']['localityName'];
+ $settings['stateOrProvinceName'] = (!empty($data['geoplugin_region'])) ?
+                                     $data['geoplugin_region'] :
+                                     $config['dn']['stateOrProvinceName'];
+ $settings['countryName'] = (!empty($data['geoplugin_countryCode'])) ?
+                             $data['geoplugin_countryCode'] :
+                             $config['dn']['CountryName'];
+ $settings['commonName'] = ((!empty($data['geoplugin_latitude']))&&
+                            (!empty($data['geoplugin_longitude']))) ?
+                             $data['geoplugin_latitude'].
+                             '::'.$data['geoplugin_longitude'] : $ip;
+ return $settings;
 }
 
 ?>
