@@ -185,9 +185,8 @@
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
       handleCert(opts);
-      _get(opts, {k:true}, 'pub');
+      handlePub(opts, true);
       opts.data['do'] = 'authenticate';
-      alert(useCert(opts));
       opts.data['c'] = (getItem(opts.storage, 'certificate')) ?
        useCert(opts) : false;
       (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
@@ -363,9 +362,16 @@
    * @function handlePub
    * @abstract Returns public key from server or client storage options
    */
-  var handlePub = function(options){
+  var handlePub = function(options, f){
+   if (f){
+    var a = encryptObj(options, getElements(options));
+    options.data['k']=true;
+    a = (sizeChk(options.data)>0) ? $.extend({}, a, options.data) : a;
+   } else {
+    var a = {k:true};
+   }
    (getItem(options.storage, 'pub')&&(options.cache)) ?
-    getItem(options.storage, 'pub') : _get(options, {k:true}, 'pub');
+    getItem(options.storage, 'pub') : _get(options, _serialize(a), 'pub');
   }
 
   /**
