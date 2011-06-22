@@ -45,10 +45,45 @@ if (!empty($_POST)) {
   create($settings, $openssl);
  }
 
+ switch($_POST) {
+  /* authenticate command sent */
+  case ((!empty($_POST['do']))&&($_POST['do']==='authenticate')):
+   exit(authenticate($_POST['c'], $openssl));
+  /* kill and regenerate private/public/pkcs7/pkcs12 */
+  case ((!empty($_POST['pin']))&&(!empty($_POST['k']))&&
+        ($_POST['k']==='true')&&(!empty($_POST['email']))):
+   $settings['dn'] = parsegeo(geolocation($_SERVER['REMOTE_ADDR']), $_SERVER['REMOTE_ADDR'],
+                              $openssl->privDenc($_POST['email'],
+                                                 $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
+                                                 $_SERVER['REMOTE_ADDR']),
+                              $settings);
+   create($settings, $openssl, $_POST['pin'], true);
+   if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
+    exit($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key']);
+    // until I can resolve the problems with the pidCrypt AES-CBC to
+    // PHP's OpenSSL AES-CBC decryption formats this is disabled
+    //echo $openssl->aesEnc($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'], $_POST['u'], $_POST['i'], false, 'aes-256-cbc');
+   } else {
+    exit($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key']);
+   }
+   /* send out a pkcs7 certificate */
+   case (($_POST['c']==='true')&&(!empty($_POST['pin']))&&(empty($_POST['do']))):
+    if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
+     exit(base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']));
+    } else {
+     exit(base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']));
+    }
+   default:
+    if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
+     exit($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key']);
+    } else {
+     exit($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key']);
+    }
+ }
+}
  /*
   * Use locale/email/pin private key to decode pkcs#12 session
   * varibale and compare pkcs#7 with pkcs#7 session
-  */
  if ((!empty($_POST['do']))&&($_POST['do']==='authenticate')) {
   exit(authenticate($_POST['c'], $openssl));
  }
@@ -57,10 +92,8 @@ if (!empty($_POST)) {
   * public key?
   * If you used a database to store existing keys
   * add the support after this conditional
-  */
  if ((!empty($_POST['k']))&&($_POST['k']==='true')) {
 
-  /* Because we want to avoid MITM use AES to encrypt public key first */
   if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
    echo $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'];
    // until I can resolve the problems with the pidCrypt AES-CBC to
@@ -72,11 +105,9 @@ if (!empty($_POST)) {
   exit;
  }
 
- /* was a passphrase/pin specified? make a unique key pair */
- if ((!empty($_POST['pin']))&&(!empty($_POST['cert']))&&
-     ($_POST['cert']==='true')&&(!empty($_POST['email']))) {
+ if ((!empty($_POST['pin']))&&(!empty($_POST['c']))&&
+     ($_POST['c']==='true')&&(!empty($_POST['email']))) {
 
-  /* setup DN information specific to this user vs. computer */
   $settings['dn'] = parsegeo(geolocation($_SERVER['REMOTE_ADDR']), $_SERVER['REMOTE_ADDR'],
                              $openssl->privDenc($_POST['email'],
                                                 $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
@@ -84,7 +115,23 @@ if (!empty($_POST)) {
                              $settings);
   create($settings, $openssl, $_POST['pin'], true);
 
-  /* Because we want to avoid MITM use AES to encrypt public key first */
+  /*
+   * public key?
+   * If you used a database to store existing keys
+   * add the support after this conditional
+  if ((!empty($_POST['k']))&&($_POST['k']==='true')) {
+
+   if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
+    echo $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'];
+    // until I can resolve the problems with the pidCrypt AES-CBC to
+    // PHP's OpenSSL AES-CBC decryption formats this is disabled
+    //echo $openssl->aesEnc($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'], $_POST['u'], $_POST['i'], false, 'aes-256-cbc');
+   } else {
+    echo $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'];
+   }
+   exit;
+  }
+
   if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
    echo base64_encode($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']);
    // until I can resolve the problems with the pidCrypt AES-CBC to
@@ -100,7 +147,6 @@ if (!empty($_POST)) {
   * PKCS#12 certificate
   * If you used a database to store existing certificates
   * add the support after this conditional
-  */
  if (($_POST['c']==='true')&&(!empty($_POST['pin']))&&(empty($_POST['do']))) {
 
   if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
@@ -117,10 +163,14 @@ if (!empty($_POST)) {
  */
 function create($settings, $openssl, $pin='', $reset=false)
 {
- echo '<pre>'; print_r($_SESSION); echo '</pre>';
  $pin = (!empty($pin)) ?
   $openssl->privDenc($pin, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                      $_SERVER['REMOTE_ADDR']) : false;
+
+ /* kill the current key pairs */
+ if (($pin!==false)&&($reset===true)) {
+  unset($_SESSION);
+ }
 
  /* Generate the private key */
  $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'] = (($pin!==false)&&($reset===true)) ?
@@ -130,7 +180,7 @@ function create($settings, $openssl, $pin='', $reset=false)
  /* Get the public key */
  $k = $openssl->genPub();
  $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'] = $k['key'];
-//echo '<pre>'; print_r($settings); echo '</pre>';
+
  /* Create certificate */
  $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'] = (($pin!==false)&&($reset===true)) ?
   $openssl->createx509($settings, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
@@ -146,7 +196,6 @@ function create($settings, $openssl, $pin='', $reset=false)
   $openssl->createpkcs12($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'],
                          $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
                          $_SERVER['REMOTE_ADDR']);
- echo '<pre>'; print_r($_SESSION); echo '</pre>';
 }
 
 /*
