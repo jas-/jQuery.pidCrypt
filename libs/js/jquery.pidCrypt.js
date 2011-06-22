@@ -185,7 +185,9 @@
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
       handleCert(opts);
+      _get(opts, {k:true}, 'pub');
       opts.data['do'] = 'authenticate';
+      alert(useCert(opts));
       opts.data['c'] = (getItem(opts.storage, 'certificate')) ?
        useCert(opts) : false;
       (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
