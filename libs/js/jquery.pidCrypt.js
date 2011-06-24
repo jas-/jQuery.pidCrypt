@@ -37,7 +37,7 @@
    */
   var defaults = {
    appID:    'jQuery.pidCrypt',       // Storage key, unique string
-   storage:  'localStorage',          // Use localStorage, sessionStorage or cookies
+   storage:  'local',                 // local, session or cookies
    form:     $(this).attr('id'),      // Place holder for form ID
    proxy:    $(this).attr('action'),  // Place holder for form action
    type:     $(this).attr('method'),  // Place holder for form method
@@ -190,7 +190,7 @@
       hP(opts, true);
       opts.data['do'] = 'authenticate';
       opts.data['c'] = (gI(opts.storage, 'certificate')) ?
-       useCert(opts) : false;
+       uC(opts) : false;
       (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
       __do(opts);
      });
@@ -224,7 +224,7 @@
      ((o.callback)&&($.isFunction(o.callback))) ? o.callback.call(x) : false;
     },
     complete: function(x){
-     (!o.cache) ? _remove(o) : '';
+     (!o.cache) ? rm(o) : '';
     }
    });
    return false;
@@ -306,7 +306,7 @@
    *           on object and returns results as object
    */
   var eO = function(o, obj){
-   var x = {}; var y = certParser(usePub(o));
+   var x = {}; var y = certParser(uP(o));
    iP(o, y);
    if (szCk(obj)>0){
     $.each(obj, function(a, b){
@@ -418,10 +418,10 @@
   }
 
   /**
-   * @function usePub
+   * @function uP
    * @abstract Returns decrypted public key from clent storage
    */
-  var usePub = function(o){
+  var uP = function(o){
    return o.aes.decryptText(gI(o.storage, 'pub'),
                                     gI(o.storage, 'uuid'),
                                             {nBits:256,salt:gI(o.storage,
@@ -429,11 +429,11 @@
   }
 
   /**
-   * @function useCert
+   * @function uC
    * @abstract Returns decrypted PKCS#12 certificate from server or client
    *           storage
    */
-  var useCert = function(o){
+  var uC = function(o){
    return o.aes.decryptText(gI(o.storage, 'certificate'),
                                     gI(o.storage, 'uuid'),
                                             {nBits:256,salt:gI(o.storage,
@@ -441,10 +441,10 @@
   }
 
   /**
-   * @function useEmail
+   * @function uE
    * @abstract Returns decrypted PKCS#7 email from server or client storage
    */
-  var useEmail = function(o){
+  var uE = function(o){
    return o.aes.decryptText(gI(o.storage, 'signed'),
                                     gI(o.storage, 'uuid'),
                                             {nBits:256,salt:gI(o.storage,
@@ -452,10 +452,10 @@
   }
 
   /**
-   * @function _remove
+   * @function rm
    * @abstract Removes client storage if cache set to false
    */
-  var _remove = function(o){
+  var rm = function(o){
    (gI(o.storage, 'uuid')) ? dI(o.storage, 'uuid') : false;
    (gI(o.storage, 'pub')) ? dI(o.storage, 'pub') : false;
    (gI(o.storage, 'certificate')) ? dI(o.storage, 'certificate') : false;
@@ -517,7 +517,7 @@
                                 gI(o.storage, 'uuid')+'<br/>');
     $('#'+o.form).append('&nbsp;<i>IV:</i> '+
                                 gI(o.storage, 'iv')+'<br/>');
-    $('#'+o.form).append('&nbsp;<i>KEY:</i> '+usePub(o)+'<br/>');
+    $('#'+o.form).append('&nbsp;<i>KEY:</i> '+uP(o)+'<br/>');
    }
    return true;
   }
@@ -552,10 +552,10 @@
    var x = false;
    type = (vStore(type)) ? type : 'cookie';
    switch(type) {
-    case 'localStorage':
+    case 'local':
      x = sL(k, v);
      break;
-    case 'sessionStorage':
+    case 'session':
      x = sS(k, v);
      break;
     case 'cookie':
@@ -577,10 +577,10 @@
    var x = false;
    type = (vStore(type)) ? type : 'cookie';
    switch(type) {
-    case 'localStorage':
+    case 'local':
      x = gL(k);
      break;
-    case 'sessionStorage':
+    case 'session':
      x = gS(k);
      break;
     case 'cookie':
@@ -602,10 +602,10 @@
    var x = false;
    type = (vStore(type)) ? type : 'cookie';
    switch(type) {
-    case 'localStorage':
+    case 'local':
      x = dL(k);
      break;
-    case 'sessionStorage':
+    case 'session':
      x = dS(k);
      break;
     case 'cookie':
