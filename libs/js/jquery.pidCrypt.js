@@ -550,7 +550,7 @@
    */
   var sI = function(type, k, v){
    var x = false;
-   type = (vStore(type)) ? type : 'cookie';
+   type = (vStore(type+'Storage')) ? type : 'cookie';
    switch(type) {
     case 'local':
      x = sL(k, v);
@@ -575,7 +575,7 @@
    */
   var gI = function(type, k){
    var x = false;
-   type = (vStore(type)) ? type : 'cookie';
+   type = (vStore(type+'Storage')) ? type : 'cookie';
    switch(type) {
     case 'local':
      x = gL(k);
@@ -600,7 +600,7 @@
    */
   var dI = function(type, k){
    var x = false;
-   type = (vStore(type)) ? type : 'cookie';
+   type = (vStore(type+'Storage')) ? type : 'cookie';
    switch(type) {
     case 'local':
      x = dL(k);
