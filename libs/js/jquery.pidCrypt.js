@@ -26,7 +26,7 @@
   * @param method string Method to employ for form ID DOM object
   *                      default, sign, verify, encrypt_sign,
   *                      decrypt_verify, authenticate
-  * @param options object Options object for specific operations
+  * @param options object options object for specific operations
   *                       cache, debug, callback
   */
  $.fn.pidCrypt = function(method) {
@@ -36,6 +36,7 @@
    * @abstract Default set of options for plug-in
    */
   var defaults = {
+   appID:    'jQuery.pidCrypt',       // Storage key, unique string
    storage:  'localStorage',          // Use localStorage, sessionStorage or cookies
    form:     $(this).attr('id'),      // Place holder for form ID
    proxy:    $(this).attr('action'),  // Place holder for form action
@@ -43,6 +44,7 @@
    aes:      '',                      // Place holder for AES object
    cache:    true,                    // Use caching?
    debug:    false,                   // Use debugging?
+   config:   {},                      // Object used for configuration settings
    data:     {},                      // Object used for signing methods
    callback: function() {}            // Optional callback once form processed
   };
@@ -59,12 +61,12 @@
     *           uses client storage for key, gathers non-null form elements,
     *           encrypts and sends to server for private key decryption
     */
-   init: function(options){
-    var opts = $.extend({}, defaults, options);
+   init: function(o){
+    var opts = $.extend({}, defaults, o);
     if (__dependencies(opts)){
-     opts.aes = setupAES();
-     handleKey(opts);
-     handlePub(opts);
+     opts.aes = sAES();
+     hK(opts);
+     hP(opts);
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
       (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
@@ -80,12 +82,12 @@
     *           uses client storage for key, gathers non-null form elements,
     *           encrypts and sends to server for PKCS#7 signing
     */
-   sign: function(options){
-    var opts = $.extend({}, defaults, options);
+   sign: function(o){
+    var opts = $.extend({}, defaults, o);
     if (__dependencies(opts)){
-     opts.aes = setupAES();
-     handleKey(opts);
-     handlePub(opts);
+     opts.aes = sAES();
+     hK(opts);
+     hP(opts);
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
       opts.data['do'] = 'sign';
@@ -104,13 +106,13 @@
     *           public key to encrypt contents which the server then decrypts
     *           and performs validation of PKCS#7 signature
     */
-   verify: function(options){
-    var opts = $.extend({}, defaults, options);
+   verify: function(o){
+    var opts = $.extend({}, defaults, o);
     if (__dependencies(opts)){
-     opts.aes = setupAES();
-     handleKey(opts);
-     handlePub(opts);
-     handleEmail(opts);
+     opts.aes = sAES();
+     hK(opts);
+     hP(opts);
+     hE(opts);
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
       opts.data['do'] = 'verify';
@@ -128,12 +130,12 @@
     *           elements, encrypts and sends to server for PKCS#7 encrypting
     *           & signing
     */
-   encrypt_sign: function(options){
-    var opts = $.extend({}, defaults, options);
+   encrypt_sign: function(o){
+    var opts = $.extend({}, defaults, o);
     if (__dependencies(opts)){
-     opts.aes = setupAES();
-     handleKey(opts);
-     handlePub(opts);
+     opts.aes = sAES();
+     hK(opts);
+     hP(opts);
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
       opts.data['do'] = 'encrypt_sign';
@@ -152,13 +154,13 @@
     *           email, uses public key to encrypt contents which the server
     *           then decrypts and performs validation of PKCS#7 signature
     */
-   decrypt_verify: function(options){
-    var opts = $.extend({}, defaults, options);
+   decrypt_verify: function(o){
+    var opts = $.extend({}, defaults, o);
     if (__dependencies(opts)){
-     opts.aes = setupAES();
-     handleKey(opts);
-     handlePub(opts);
-     handleEmail(opts);
+     opts.aes = sAES();
+     hK(opts);
+     hP(opts);
+     hE(opts);
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
       opts.data['do'] = 'decrypt_verify';
@@ -176,18 +178,18 @@
     *           residing on server. Optionally stores PKCS#12 certificate
     *           in client storage options and attempts to use as authentication
     */
-   authenticate: function(options){
-    var opts = $.extend({}, defaults, options);
+   authenticate: function(o){
+    var opts = $.extend({}, defaults, o);
     if (__dependencies(opts)){
-     opts.aes = setupAES();
-     handleKey(opts);
-     handlePub(opts);
+     opts.aes = sAES();
+     hK(opts);
+     hP(opts);
      $('#'+opts.form).live('submit', function(e){
       e.preventDefault();
-      handleCert(opts);
-      handlePub(opts, true);
+      hC(opts);
+      hP(opts, true);
       opts.data['do'] = 'authenticate';
-      opts.data['c'] = (getItem(opts.storage, 'certificate')) ?
+      opts.data['c'] = (gI(opts.storage, 'certificate')) ?
        useCert(opts) : false;
       (opts.debug) ? $('#'+opts.form).append(_output(opts)) : false;
       __do(opts);
@@ -204,26 +206,25 @@
    *           while setting custom header information and processing response
    *           with user defined callback function
    */
-  var __do = function(options){
-   var a = encryptObj(options, getElements(options));
-   a = (sizeChk(options.data)>0) ? $.extend({}, a, options.data) : a;
-   (options.debug) ? _show(options, a) : false;
+  var __do = function(o){
+   var a = eO(o, gE(o));
+   a = (szCk(o.data)>0) ? $.extend({}, a, o.data) : a;
+   (o.debug) ? _show(o, a) : false;
    $.ajax({
     data: a,
-    type: options.type,
-    url: options.proxy,
-    context: options.id,
+    type: o.type,
+    url: o.proxy,
+    context: o.id,
     beforeSend: function(xhr) {
      xhr.setRequestHeader('X-Alt-Referer', 'jQuery.pidCrypt');
     },
     success: function(x){
-     (options.debug) ?
-      $('#'+options.form).append('<b>Server response:</b><br/>&nbsp;'+x) : false;
-     ((options.callback)&&($.isFunction(options.callback))) ?
-      options.callback.call(x) : false;
+     (o.debug) ?
+      $('#'+o.form).append('<b>Server response:</b><br/>&nbsp;'+x) : false;
+     ((o.callback)&&($.isFunction(o.callback))) ? o.callback.call(x) : false;
     },
     complete: function(x){
-     (!options.cache) ? _remove(options) : '';
+     (!o.cache) ? _remove(o) : '';
     }
    });
    return false;
@@ -235,24 +236,47 @@
    *           retrieve specified data from server while storing specified
    *           item within specified storage mechanism
    */
-  var _get = function(options, args, name){
+  var _get = function(o, args, name){
    var x = (typeof args==='object') ? _serialize(args) : args;
    $.ajax({
     data: x,
     type: 'post',
-    url: options.proxy,
+    url: o.proxy,
     beforeSend: function(xhr) {
      xhr.setRequestHeader('X-Alt-Referer', 'jQuery.pidCrypt');
     },
     success: function(response){
-     setItem(options.storage, name,
-             options.aes.encryptText(response,
-                                     getItem(options.storage, 'uuid'),
-                                     {nBits:256,salt:getItem(options.storage,
-                                                             'iv')}));
+     sI(o.storage, name,
+             o.aes.encryptText(response,
+                               gI(o.storage, 'uuid'),
+                                       {nBits:256,salt:gI(o.storage,
+                                                               'iv')}));
     }
    });
    return false;
+  }
+
+  /**
+   * @function __id
+   * @abstract Need an id to associate the public key and other
+   *           configuration options with a hostname or url
+   */
+  var __id = function(){
+   return (vStr(location.host)) ?
+    location.host :
+     (vStr(location.hostname)) ?
+      location.hostname :
+       'localhost';
+  }
+
+  /**
+   * @function existing
+   * @abstract Function used to return configured options
+   *           as JSON object
+   */
+  var existing = function(o) {
+   return (gI(o.storage, o.appID)) ?
+    JSON.parse(gI(o.storage, o.appID)) : false;
   }
 
   /**
@@ -260,7 +284,7 @@
    * @abstract Create serialized string of object
    */
   var _serialize = function(args){
-   if (sizeChk(args)>0){
+   if (szCk(args)>0){
     var x='';
     $.each(args, function(a, b){
      if (typeof b==='object'){
@@ -276,15 +300,15 @@
   }
 
   /**
-   * @function encryptObj
+   * @function eO
    * @abstract Calls certParser() on public key, intializes results with
    *           external pidCrypt.RSA object, performs public key encryption
    *           on object and returns results as object
    */
-  var encryptObj = function(options, obj){
-   var x = {}; var y = certParser(usePub(options));
-   initPub(options, y);
-   if (sizeChk(obj)>0){
+  var eO = function(o, obj){
+   var x = {}; var y = certParser(usePub(o));
+   iP(o, y);
+   if (szCk(obj)>0){
     $.each(obj, function(a, b){
      if (typeof b==='object'){
       x[a]={};
@@ -302,19 +326,19 @@
   }
 
   /**
-   * @function setupAES
+   * @function sAES
    * @abstract Returns pidCrypt.AES.CBC object for client AES storage
    */
-  var setupAES = function(){
+  var sAES = function(){
    return new pidCrypt.AES.CBC();
   }
 
   /**
-   * @function initPub
+   * @function iP
    * @abstract Returns external pidCrypt.RSA object once certParse()
    *           generates necessary bytes from public key
    */
-  var initPub = function(options, pub){
+  var iP = function(o, pub){
    if (pub.b64){
     var x = pidCryptUtil.decodeBase64(pub.b64);
     var rsa = new pidCrypt();
@@ -326,11 +350,11 @@
   }
 
   /**
-   * @function genUUID
+   * @function gUUID
    * @abstract Generate a uuid (RFC-4122) string or optional hex
    *           string of specified length
    */
-  var genUUID = function(len){
+  var gUUID = function(len){
    var chars = '0123456789abcdef'.split('');
    var uuid = [], rnd = Math.random, r;
    uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
@@ -346,65 +370,62 @@
   }
 
   /**
-   * @function handleKey
+   * @function hK
    * @abstract Generates uuid and iv if client storage mechanisms are null
    */
-  var handleKey = function(options){
-   (getItem(options.storage, 'uuid')&&(options.cache)) ?
-    getItem(options.storage, 'uuid') : setItem(options.storage, 'uuid',
-                                               genUUID(null));
-   ((getItem(options.storage, 'iv'))&&(options.cache)) ?
-    getItem(options.storage, 'iv') : setItem(options.storage, 'iv',
-                                             genUUID(16));
+  var hK = function(o){
+   (gI(o.storage, 'uuid')&&(o.cache)) ?
+    gI(o.storage, 'uuid') : sI(o.storage, 'uuid', gUUID(null));
+   ((gI(o.storage, 'iv'))&&(o.cache)) ?
+    gI(o.storage, 'iv') : sI(o.storage, 'iv', gUUID(16));
   }
 
   /**
-   * @function handlePub
-   * @abstract Returns public key from server or client storage options
+   * @function hP
+   * @abstract Returns public key from server or client storage o
    */
-  var handlePub = function(options, f){
+  var hP = function(o, f){
    if (f){
-    var a = encryptObj(options, getElements(options));
-    options.data['k']=true;
-    a = (sizeChk(options.data)>0) ? $.extend({}, a, options.data) : a;
+    var a = eO(o, gE(o));
+    o.data['k']=true;
+    a = (szCk(o.data)>0) ? $.extend({}, a, o.data) : a;
    } else {
     var a = {k:true};
    }
-   (getItem(options.storage, 'pub')&&(options.cache)) ?
-    getItem(options.storage, 'pub') : _get(options, _serialize(a), 'pub');
+   (gI(o.storage, 'pub')&&(o.cache)) ?
+    gI(o.storage, 'pub') : _get(o, _serialize(a), 'pub');
   }
 
   /**
-   * @function handleCert
+   * @function hC
    * @abstract Returns PKCS#12 certificate from server or client storage options
    */
-  var handleCert = function(options){
-   var a = encryptObj(options, getElements(options));
-   options.data['c']=true;
-   a = (sizeChk(options.data)>0) ? $.extend({}, a, options.data) : a;
-   (getItem(options.storage, 'certificate')&&(options.cache)) ?
-    getItem(options.storage, 'certificate') : _get(options, _serialize(a),
-                                                   'certificate');
+  var hC = function(o){
+   var a = eO(o, gE(o));
+   o.data['c']=true;
+   a = (szCk(o.data)>0) ? $.extend({}, a, o.data) : a;
+   (gI(o.storage, 'certificate')&&(o.cache)) ?
+    gI(o.storage, 'certificate') : _get(o, _serialize(a), 'certificate');
   }
 
   /**
-   * @function handleEmail
+   * @function hE
    * @abstract Returns PKCS#7 signed email from server or client storage
    */
-  var handleEmail = function(options){
-   (getItem(options.storage, 'signed')&&(options.cache)) ?
-    getItem(options.storage, 'signed') : _get(options, {e:true}, 'signed');
+  var hE = function(o){
+   (gI(o.storage, 'signed')&&(o.cache)) ?
+    gI(o.storage, 'signed') : _get(o, {e:true}, 'signed');
   }
 
   /**
    * @function usePub
    * @abstract Returns decrypted public key from clent storage
    */
-  var usePub = function(options){
-   return options.aes.decryptText(getItem(options.storage, 'pub'),
-                                  getItem(options.storage, 'uuid'),
-                                  {nBits:256,salt:getItem(options.storage,
-                                                          'iv')});
+  var usePub = function(o){
+   return o.aes.decryptText(gI(o.storage, 'pub'),
+                                    gI(o.storage, 'uuid'),
+                                            {nBits:256,salt:gI(o.storage,
+                                                                    'iv')});
   }
 
   /**
@@ -412,58 +433,55 @@
    * @abstract Returns decrypted PKCS#12 certificate from server or client
    *           storage
    */
-  var useCert = function(options){
-   return options.aes.decryptText(getItem(options.storage, 'certificate'),
-                                  getItem(options.storage, 'uuid'),
-                                  {nBits:256,salt:getItem(options.storage,
-                                                          'iv')});
+  var useCert = function(o){
+   return o.aes.decryptText(gI(o.storage, 'certificate'),
+                                    gI(o.storage, 'uuid'),
+                                            {nBits:256,salt:gI(o.storage,
+                                                                    'iv')});
   }
 
   /**
    * @function useEmail
    * @abstract Returns decrypted PKCS#7 email from server or client storage
    */
-  var useEmail = function(options){
-   return options.aes.decryptText(getItem(options.storage, 'signed'),
-                                  getItem(options.storage, 'uuid'),
-                                  {nBits:256,salt:getItem(options.storage,
-                                                          'iv')});
+  var useEmail = function(o){
+   return o.aes.decryptText(gI(o.storage, 'signed'),
+                                    gI(o.storage, 'uuid'),
+                                            {nBits:256,salt:gI(o.storage,
+                                                                    'iv')});
   }
 
   /**
    * @function _remove
    * @abstract Removes client storage if cache set to false
    */
-  var _remove = function(options){
-   (getItem(options.storage, 'uuid')) ? delItem(options.storage, 'uuid') :
-    false;
-   (getItem(options.storage, 'pub')) ? delItem(options.storage, 'pub') : false;
-   (getItem(options.storage, 'certificate')) ? delItem(options.storage,
-                                                       'certificate') : false;
-   (getItem(options.storage, 'iv')) ? delItem(options.storage, 'iv') : false;
-   (getItem(options.storage, 'signed')) ? delItem(options.storage,
-                                                  'signed') : false;
+  var _remove = function(o){
+   (gI(o.storage, 'uuid')) ? dI(o.storage, 'uuid') : false;
+   (gI(o.storage, 'pub')) ? dI(o.storage, 'pub') : false;
+   (gI(o.storage, 'certificate')) ? dI(o.storage, 'certificate') : false;
+   (gI(o.storage, 'iv')) ? dI(o.storage, 'iv') : false;
+   (gI(o.storage, 'signed')) ? dI(o.storage, 'signed') : false;
   }
 
   /**
-   * @function getElements
+   * @function gE
    * @abstract Generates object of specified DOM form element that are non-null
    */
-  var getElements = function(opts){
+  var gE = function(opts){
    var obj={};
    $.each($('#'+opts.form+' > :input'), function(k, v){
-    if ((validateString(v.value))&&(validateString(v.name))){
-     obj[v.name] = (parseInt(v.value.length)>80) ? strSplit(v.value) : v.value;
+    if ((vStr(v.value))&&(vStr(v.name))){
+     obj[v.name] = (parseInt(v.value.length)>80) ? sSplt(v.value) : v.value;
     }
    });
    return obj;
   }
 
   /**
-   * @function sizeChk
+   * @function szCk
    * @abstract Performs a check on object sizes
    */
-  var sizeChk = function(obj){
+  var szCk = function(obj){
    var n = 0;
    $.each(obj, function(k, v){
     if (obj.hasOwnProperty(k)) n++;
@@ -472,11 +490,11 @@
   }
 
   /**
-   * @function strSplit
+   * @function sSplt
    * @abstract Splits string length helper to overcome limitations with RSA
    *           cipher
    */
-  var strSplit = function(str){
+  var sSplt = function(str){
    var t = str.length/80;
    var y = {}; var x=0; var z=80;
    for (var i=0; i<t; i++) {
@@ -492,14 +510,14 @@
    * @function _output
    * @abstract Debugging output helper
    */
-  var _output = function(options){
-   if (options.debug) {
-    $('#'+options.form).append('<b>Processing form contents...</b><br/>');
-    $('#'+options.form).append('&nbsp;<i>UUID:</i> '+
-                                getItem(options.storage, 'uuid')+'<br/>');
-    $('#'+options.form).append('&nbsp;<i>IV:</i> '+
-                                getItem(options.storage, 'iv')+'<br/>');
-    $('#'+options.form).append('&nbsp;<i>KEY:</i> '+usePub(options)+'<br/>');
+  var _output = function(o){
+   if (o.debug) {
+    $('#'+o.form).append('<b>Processing form contents...</b><br/>');
+    $('#'+o.form).append('&nbsp;<i>UUID:</i> '+
+                                gI(o.storage, 'uuid')+'<br/>');
+    $('#'+o.form).append('&nbsp;<i>IV:</i> '+
+                                gI(o.storage, 'iv')+'<br/>');
+    $('#'+o.form).append('&nbsp;<i>KEY:</i> '+usePub(o)+'<br/>');
    }
    return true;
   }
@@ -509,118 +527,118 @@
    * @abstract Additional debugging output helper for various objects and
    *           server responses
    */
-  var _show = function(options, data){
-   if (sizeChk(data)>0){
-    $('#'+options.form).append('<b>Encrypted data:</b><br/>');
+  var _show = function(o, data){
+   if (szCk(data)>0){
+    $('#'+o.form).append('<b>Encrypted data:</b><br/>');
     $.each(data, function(a,b){
      if (typeof b==='object'){
-      $('#'+options.form).append('&nbsp;<i>'+a+':</i><br/>');
+      $('#'+o.form).append('&nbsp;<i>'+a+':</i><br/>');
       $.each(b, function(x,y){
-       $('#'+options.form).append('&nbsp;<i>'+x+'</i> = '+y+'<br/>');
+       $('#'+o.form).append('&nbsp;<i>'+x+'</i> = '+y+'<br/>');
       });
      } else {
-      $('#'+options.form).append('&nbsp;<i>'+a+'</i> = '+b+'<br/>');
+      $('#'+o.form).append('&nbsp;<i>'+a+'</i> = '+b+'<br/>');
      }
     });
    }
   }
 
   /**
-   * @function setItem
+   * @function sI
    * @abstract Proxy function for setting data with specified client storage
    *           option
    */
-  var setItem = function(type, k, v){
+  var sI = function(type, k, v){
    var x = false;
-   type = (validateStorage(type)) ? type : 'cookie';
+   type = (vStore(type)) ? type : 'cookie';
    switch(type) {
     case 'localStorage':
-     x = setLocal(k, v);
+     x = sL(k, v);
      break;
     case 'sessionStorage':
-     x = setSession(k, v);
+     x = sS(k, v);
      break;
     case 'cookie':
-     x = setCookie(k, v);
+     x = sC(k, v);
      break;
     default:
-     x = setLocal(k, v);
+     x = sL(k, v);
      break;
    }
    return x;
   }
 
   /**
-   * @function getItem
+   * @function gI
    * @abstract Proxy function for getting data with specified client storage
    *           option
    */
-  var getItem = function(type, k){
+  var gI = function(type, k){
    var x = false;
-   type = (validateStorage(type)) ? type : 'cookie';
+   type = (vStore(type)) ? type : 'cookie';
    switch(type) {
     case 'localStorage':
-     x = getLocal(k);
+     x = gL(k);
      break;
     case 'sessionStorage':
-     x = getSession(k);
+     x = gS(k);
      break;
     case 'cookie':
-     x = getCookie(k);
+     x = gC(k);
      break;
     default:
-     x = getLocal(k);
+     x = gL(k);
      break;
    }
    return x;
   }
 
   /**
-   * @function delItem
+   * @function dI
    * @abstract Proxy function for deleting data with specified client storage
    *           option
    */
-  var delItem = function(type, k){
+  var dI = function(type, k){
    var x = false;
-   type = (validateStorage(type)) ? type : 'cookie';
+   type = (vStore(type)) ? type : 'cookie';
    switch(type) {
     case 'localStorage':
-     x = delLocal(k);
+     x = dL(k);
      break;
     case 'sessionStorage':
-     x = delSession(k);
+     x = dS(k);
      break;
     case 'cookie':
-     x = delCookie(k);
+     x = dC(k);
      break;
     default:
-     x = delLocal(k);
+     x = dL(k);
      break;
    }
    return x;
   }
 
   /**
-   * @function setLocal
+   * @function sL
    * @abstract Function used to set localStorage items
    */
-  var setLocal = function(k, v){
+  var sL = function(k, v){
    return (localStorage.setItem(k, v)) ? false : true;
   }
 
   /**
-   * @function setSession
+   * @function sS
    * @abstract Function used to set sessionStorage items
    */
-  var setSession = function(k, v){
+  var sS = function(k, v){
    return (sessionStorage.setItem(k, v)) ? false : true;
   }
 
   /**
-   * @function setCookie
+   * @function sC
    * @abstract Function used to set cookie items
    */
-  var setCookie = function(k, v){
+  var sC = function(k, v){
    if (typeof $.cookie === 'function') {
     return ($.cookie(k, v, {expires: 7})) ? true : false;
    } else {
@@ -629,26 +647,26 @@
   }
 
   /**
-   * @function getLocal
+   * @function gL
    * @abstract Function used to get localStorage items
    */
-  var getLocal = function(k){
+  var gL = function(k){
    return (localStorage.getItem(k)) ? localStorage.getItem(k) : false;
   }
 
   /**
-   * @function setSession
+   * @function sS
    * @abstract Function used to get sessionStorage items
    */
-  var getSession = function(k){
+  var gS = function(k){
    return (sessionStorage.getItem(k)) ? sessionStorage.getItem(k) : false;
   }
 
   /**
-   * @function setCookie
+   * @function sC
    * @abstract Function used to get cookie items
    */
-  var getCookie = function(name){
+  var gC = function(name){
    if (typeof $.cookie === 'function') {
     return ($.cookie(name)) ? $.cookie(name) : false;
    } else {
@@ -657,26 +675,26 @@
   }
 
   /**
-   * @function delLocal
+   * @function dL
    * @abstract Function used to delete localStorage items
    */
-  var delLocal = function(k){
+  var dL = function(k){
    return (localStorage.removeItem(k)) ? localStorage.removeItem(k) : false;
   }
 
   /**
-   * @function delSession
+   * @function dS
    * @abstract Function used to delete sessionStorage items
    */
-  var delSession = function(k){
+  var dS = function(k){
    return (sessionStorage.removeItem(k)) ? sessionStorage.removeItem(k) : false;
   }
 
   /**
-   * @function delCookie
+   * @function dC
    * @abstract Function used to delete cookie items
    */
-  var delCookie = function(name){
+  var dC = function(name){
    if (typeof $.cookie === 'function') {
     return ($.cookie(name, '', {expires: -7})) ? true : false;
    } else {
@@ -685,19 +703,19 @@
   }
 
   /**
-   * @function validateString
+   * @function vStr
    * @abstract Function used combine string checking functions
    */
-  var validateString = function(x){
+  var vStr = function(x){
    return ((x===false)||(x.length===0)||(!x)||(x===null)||
            (x==='')||(typeof x==='undefined')) ? false : true;
   }
 
   /**
-   * @function validateStorage
+   * @function vStore
    * @abstract Function used to validate client storage option
    */
-  var validateStorage = function(type){
+  var vStore = function(type){
    try {
     return ((type in window)&&(window[type])) ? true : false;
    } catch (e) {
