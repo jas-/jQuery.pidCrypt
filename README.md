@@ -38,82 +38,125 @@
 * Default usage using HTML5 localStorage
 
 ```javascript
-$('#form').pidCrypt();
+$('#form').pidCrypt();```
 
 * Default Using HTML5 sessionStorage
 
 ```javascript
-$('#form').pidCrypt({storage:'sessionStorage'});
+$('#form').pidCrypt({storage:'sessionStorage'});```
 
 * Default using cookies (requires the jQuery cookie plug-in)
 
-```$('#form').pidCrypt({storage:'cookie'});```
+```javascript
+$('#form').pidCrypt({storage:'cookie'});```
 
 * Example of using the callback method to process server response
-```$('#form').pidCrypt({callback:function(){ console.log('foo'); }});```
+
+```javascript
+$('#form').pidCrypt({callback:function(){ console.log('foo'); }});```
 
 * Disable local caching of public key
-```$('#form').pidCrypt({cache:false});```
+
+```javascript
+$('#form').pidCrypt({cache:false});```
 
 * Enable debugging output
-```$('#form').pidCrypt({debug:true});```
+
+```javascript
+$('#form').pidCrypt({debug:true});```
 
 ### Using PKCS#7 email signing:
 * Using a PKCS#7 certificate for email signing
-```$('#form').pidCrypt('sign');```
+
+```javascript
+$('#form').pidCrypt('sign');```
 
 * Using a PKCS#7 certificate for email signing and sessionStorage
-```$('#form').pidCrypt('sign',{storage:'sessionStorage'});```
+
+```javascript
+$('#form').pidCrypt('sign',{storage:'sessionStorage'});```
 
 * Using a PKCS#7 certificate for email signing and cookies (requires the jQuery cookie plug-in)
-```$('#form').pidCrypt('sign',{storage:'cookie'});```
+
+```javascript
+$('#form').pidCrypt('sign',{storage:'cookie'});```
 
 * Using a PKCS#7 certificate for email signing using the callback method to process server response
-```$('#form').pidCrypt('sign',{callback:function(){ console.log('foo'); }});```
+
+```javascript
+$('#form').pidCrypt('sign',{callback:function(){ console.log('foo'); }});```
 
 * Using a PKCS#7 certificate for email signing while disabling local caching of public key
-```$('#form').pidCrypt('sign',{cache:false});```
+
+```javascript
+$('#form').pidCrypt('sign',{cache:false});```
 
 * Using a PKCS#7 certificate for email signing while enabling debugging output
-```$('#form').pidCrypt('sign',{debug:true});```
+
+```javascript
+$('#form').pidCrypt('sign',{debug:true});```
 
 ### Using PKCS#7 email encryption and signing
 * Using a PKCS#7 certificate for email encryption & signing
-```$('#form').pidCrypt('encrypt_sign');```
+
+```javascript
+$('#form').pidCrypt('encrypt_sign');```
 
 * Using a PKCS#7 certificate for email encryption & signing and sessionStorage
-```$('#form').pidCrypt('encrypt_sign',{storage:'sessionStorage'});```
+
+```javascript
+$('#form').pidCrypt('encrypt_sign',{storage:'sessionStorage'});```
 
 * Using a PKCS#7 certificate for email encryption & signing and cookies (requires the jQuery cookie plug-in)
-```$('#form').pidCrypt('encrypt_sign',{storage:'cookie'});```
+
+```javascript
+$('#form').pidCrypt('encrypt_sign',{storage:'cookie'});```
 
 * Using a PKCS#7 certificate for email signing using the callback method to process server response
-```$('#form').pidCrypt('sign',{callback:function(){ console.log('foo'); }});```
+
+```javascript
+$('#form').pidCrypt('sign',{callback:function(){ console.log('foo'); }});```
 
 * Using a PKCS#7 certificate for email encryption & signing while disabling local caching of public key
-```$('#form').pidCrypt('encrypt_sign',{cache:false});```
+
+```javascript
+$('#form').pidCrypt('encrypt_sign',{cache:false});```
 
 * Using a PKCS#7 certificate for email encryption & signing while enabling debugging output
-```$('#form').pidCrypt('encrypt_sign',{debug:true});```
+
+```javascript
+$('#form').pidCrypt('encrypt_sign',{debug:true});```
 
 ### Using PKCS#12 certificate authentication
 * Using a PKCS#12 certificate for authentication
-```$('#form').pidCrypt('authenticate');```
+
+```javascript
+$('#form').pidCrypt('authenticate');```
 
 * Using a PKCS#12 certificate for authentication with sessionStorage
-```$('#form').pidCrypt('authenticate',{storage:'sessionStorage'});```
+
+```javascript
+$('#form').pidCrypt('authenticate',{storage:'sessionStorage'});```
 
 * Using a PKCS#12 certificate for authentication with cookies (requires the jQuery cookie plug-in)
-```$('#form').pidCrypt('authenticate',{storage:'cookie'});```
+
+```javascript
+$('#form').pidCrypt('authenticate',{storage:'cookie'});```
 
 * Using a PKCS#12 certificate for authentication while using the callback method to process server response
-```$('#form').pidCrypt('authenticate',{callback:function(){ console.log('foo'); }});```
+
+```javascript
+$('#form').pidCrypt('authenticate',{callback:function(){ console.log('foo'); }});```
 
 * Using a PKCS#12 certificate for authentication while disabling local caching of public key
-```$('#form').pidCrypt('authenticate',{cache:false});```
+
+```javascript
+$('#form').pidCrypt('authenticate',{cache:false});```
 
 * Using a PKCS#12 certificate for authentication while enabling debugging output
-```$('#form').pidCrypt('authenticate',{debug:true});```
+
+```javascript
+$('#form').pidCrypt('authenticate',{debug:true});```
 
 ## TODO:
 * Add PKCS#7 signed email validation
