@@ -1,4 +1,3 @@
-
 #jQuery plugin to impliment RSA public key encryption
 
   Utilizes the pidCrypt libraries for client public key
@@ -37,12 +36,17 @@
 
 ### DEFAULT USAGE:
 * Default usage using HTML5 localStorage
-```$('#form').pidCrypt();```
+
+```javascript
+$('#form').pidCrypt();
 
 * Default Using HTML5 sessionStorage
-```$('#form').pidCrypt({storage:'sessionStorage'});```
+
+```javascript
+$('#form').pidCrypt({storage:'sessionStorage'});
 
 * Default using cookies (requires the jQuery cookie plug-in)
+
 ```$('#form').pidCrypt({storage:'cookie'});```
 
 * Example of using the callback method to process server response
