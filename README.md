@@ -183,9 +183,9 @@ $('#form').pidCrypt('authenticate',{debug:true});
 ```
 
 ## TODO:
-* Add PKCS#7 signed email validation
-* Add PKCS#7 email decryption and signed validation
-* Add stricter conditional regarding authentication with PKCS#12 certificates
+* Finish PKCS#7 signed email validation
+* Finish PKCS#7 email decryption and signed validation
+* Add stricter conditional regarding authentication with PKCS#7 certificates
 
 Author: Jason Gerfen <jason.gerfen@gmail.com>
 License: GPL (see LICENSE)
