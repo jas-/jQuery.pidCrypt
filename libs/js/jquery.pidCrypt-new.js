@@ -1,7 +1,40 @@
+/**
+ *
+ * jQuery plugin to impliment RSA public key encryption for
+ * form submissions.
+ *
+ * Utilizes the pidCrypt libraries for client public key
+ * encryption while the associated PHP class uses
+ * OpenSSL to generate the necessary private/public key pairs used
+ * by this plug-in
+ *
+ * Fork me @ https://www.github.com/jas-/jQuery.pidCrypt
+ *
+ * Author: Jason Gerfen <jason.gerfen@gmail.com>
+ * License: GPL (see LICENSE)
+ *
+ */
+
 (function($){
 
+ /**
+  * @function jQuery.pidCrypt
+  * @abstract Plug-in to implement pidCrypt RSA and AES
+  *           encryption for public key encryption of
+  *           web form elements with support for
+  *           client storage options
+  * @param method string Method to employ for form ID DOM object
+  *                      default, sign, verify, encrypt_sign,
+  *                      decrypt_verify, authenticate
+  * @param options object options object for specific operations
+  *                       cache, debug, callback
+  */
  $.fn.pidCrypt = function(method) {
 
+  /**
+   * @object defaults
+   * @abstract Default set of options for plug-in
+   */
   var defaults = defaults || {
    appID:        'jQuery.pidCrypt',
    storage:      'local',
@@ -15,8 +48,18 @@
    errCallback:  function(){}
   };
 
+  /**
+   * @object methods
+   * @abstract Plug-in methods
+   */
   var methods = methods || {
 
+   /**
+    * @function init
+    * @abstract Default plug-in method. Requests public key, optionally
+    *           uses client storage for key, gathers non-null form elements,
+    *           encrypts and sends to server for private key decryption
+    */
    init: function(o){
     var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
@@ -26,6 +69,12 @@
     return true;
    },
 
+   /**
+    * @function sign
+    * @abstract PKCS#7 email signing method. Requests public key, optionally
+    *           uses client storage for key, gathers non-null form elements,
+    *           encrypts and sends to server for PKCS#7 signing
+    */
    sign: function(o){
     var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
@@ -34,6 +83,14 @@
     return true;
    },
 
+   /**
+    * @function verify
+    * @abstract PKCS#7 email verification method. Requests PKCS#7 signed email,
+    *           optionally uses client storage for email, gathers non-null
+    *           form elements containing contents of signed email, uses
+    *           public key to encrypt contents which the server then decrypts
+    *           and performs validation of PKCS#7 signature
+    */
    verify: function(o){
     var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
@@ -42,6 +99,13 @@
     return true;
    },
 
+   /**
+    * @function encrypt_sign
+    * @abstract PKCS#7 email encryption & signing method. Requests public key,
+    *           optionally uses client storage for key, gathers non-null form
+    *           elements, encrypts and sends to server for PKCS#7 encrypting
+    *           & signing
+    */
    encrypt_sign: function(o){
     var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
@@ -50,6 +114,14 @@
     return true;
    },
 
+   /**
+    * @function decrypt_verify
+    * @abstract PKCS#7 email decryption & verification method. Requests PKCS#7
+    *           signed email, optionally uses client storage for email,
+    *           gathers non-null form elements containing contents of signed
+    *           email, uses public key to encrypt contents which the server
+    *           then decrypts and performs validation of PKCS#7 signature
+    */
    decrypt_verify: function(o){
     var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
@@ -58,6 +130,13 @@
     return true;
    },
 
+   /**
+    * @function authenticate
+    * @abstract PKCS#12 certificate authentication method. Requests PKCS#12
+    *           certificate based on private key and PKCS#7 certificate
+    *           residing on server. Optionally stores PKCS#12 certificate
+    *           in client storage options and attempts to use as authentication
+    */
    authenticate: function(o){
     var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
