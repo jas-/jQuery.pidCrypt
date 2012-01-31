@@ -19,9 +19,10 @@
 
    init: function(o){
     var opts = _main.__setup(o, defaults);
+    _main.__gF(opts);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
      e.preventDefault();
-     /* gather up form data and encrypt it */
+     
     });
     return true;
    },
@@ -127,7 +128,18 @@
     * @abstract Performs object creation of non-null form elements
     */
    __gF: function(o){
-    
+    var eObj = {};
+    var _obj = $('#'+o.formID.attr('id')).serializeArray();
+    $.each(_obj, function(a,b){
+     if (typeof b=='object'){
+      $.each(b, function(c,d){
+       // each key/value pair to be encrypted
+      });
+     } else {
+      // should never reach this
+     }
+    });
+    return _eObj;
    }
   }
 
