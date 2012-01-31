@@ -18,13 +18,7 @@
   var methods = methods || {
 
    init: function(o){
-    var opts = $.extend({}, defaults, o);
-    opts.aes = _encrypt.__sAES();
-    opts.keys = _keys.__existing(opts);
-    if (_validation.__szCk(opts.keys)<0){
-     _keys.__hK(opts);
-    }
-    opts.use = _keys.__sK(opts);
+    var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
      e.preventDefault();
      /* gather up form data and encrypt it */
@@ -33,7 +27,7 @@
    },
 
    sign: function(o){
-    var opts = $.extend({}, defaults, o);
+    var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
       e.preventDefault();
     });
@@ -41,7 +35,7 @@
    },
 
    verify: function(o){
-    var opts = $.extend({}, defaults, o);
+    var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
       e.preventDefault();
     });
@@ -49,7 +43,7 @@
    },
 
    encrypt_sign: function(o){
-    var opts = $.extend({}, defaults, o);
+    var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
       e.preventDefault();
     });
@@ -57,7 +51,7 @@
    },
 
    decrypt_verify: function(o){
-    var opts = $.extend({}, defaults, o);
+    var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
       e.preventDefault();
     });
@@ -65,7 +59,7 @@
    },
 
    authenticate: function(o){
-    var opts = $.extend({}, defaults, o);
+    var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
       e.preventDefault();
     });
@@ -111,6 +105,21 @@
         o.errCallback.call(xhr, status, error) : false;
      }
     });
+   },
+
+   /**
+    * @function __setup
+    * @abstract Performs simple global setup functions
+    */
+   __setup: function(o, d){
+    var opts = $.extend({}, d, o);
+    opts.aes = _encrypt.__sAES();
+    opts.keys = _keys.__existing(opts);
+    if (_validation.__szCk(opts.keys)<0){
+     _keys.__hK(opts);
+    }
+    opts.use = _keys.__sK(opts);
+    return opts;
    },
 
    /**
