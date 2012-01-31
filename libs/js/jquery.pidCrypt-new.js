@@ -19,10 +19,9 @@
 
    init: function(o){
     var opts = _main.__setup(o, defaults);
-    _main.__gF(opts);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
      e.preventDefault();
-     
+     _main.__gF(opts);
     });
     return true;
    },
@@ -116,7 +115,7 @@
     var opts = $.extend({}, d, o);
     opts.aes = _encrypt.__sAES();
     opts.keys = _keys.__existing(opts);
-    if (_validation.__szCk(opts.keys)<0){
+    if (_validation.__szCk(opts.keys)<=0){
      _keys.__hK(opts);
     }
     opts.use = _keys.__sK(opts);
@@ -128,7 +127,7 @@
     * @abstract Performs object creation of non-null form elements
     */
    __gF: function(o){
-    var eObj = {};
+    var _eObj = {};
     var _obj = $('#'+o.formID.attr('id')).serializeArray();
     $.each(_obj, function(a,b){
      if (typeof b=='object'){
@@ -595,7 +594,7 @@
      return false;
     }
    },
-   
+
    /**
     * @function szCk
     * @abstract Performs a check on object sizes
