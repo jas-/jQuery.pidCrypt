@@ -128,7 +128,7 @@
     */
    __gF: function(o){
     var obj={};
-    $.each($('#'+o.formID.attr('id')+' > :input'), function(k, v){
+    $.each($(':input, input:radio:selected, input:checkbox:checked, textarea'), function(k, v){
      if ((_validation.__vStr(v.value))&&(_validation.__vStr(v.name))){
       obj[v.name] = (parseInt(v.value.length)>80) ? _strings.__sSplt(v.value) : v.value;
      }
@@ -369,11 +369,14 @@
      var x='';
      $.each(args, function(a, b){
       if (typeof b==='object'){
-       x += _strings.__serialize(b);
+       $.each(b, function(c, d){
+        x+=a+'['+c+']'+'='+d+'&';
+       });
       } else {
        x+=a+'='+b+'&';
       }
      });
+     x = x.substring(0, x.length-1);
     } else {
      return false;
     }
