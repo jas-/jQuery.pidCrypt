@@ -21,10 +21,13 @@
     var opts = $.extend({}, defaults, o);
     opts.aes = _encrypt.__sAES();
     opts.keys = _keys.__existing(opts);
-    _keys.__hK(opts);
-    opts.use = _keys.__sK(opts, opts.keys);
+    if (_validation.__szCk(opts.keys)<0){
+     _keys.__hK(opts);
+    }
+    opts.use = _keys.__sK(opts);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
-      e.preventDefault();
+     e.preventDefault();
+     /* gather up form data and encrypt it */
     });
     return true;
    },
@@ -130,20 +133,17 @@
     * @abstract Handles retrieval, encryption and storage of key
     */
    __hK: function(o){
-    if (_validation.__szCk(o.keys)==0){
-     var x = o.callback;
-     var y = function(){
-      var z = JSON.parse(this);
-      var email = (z.email) ? z.email : o.appID;
-      var key = (z.key) ? z.key : false;
-      var p = _keys.__gUUID(null); var obj = {}; obj[p] = {};
-      obj[p]['email'] = o.aes.encryptText(email, p, {nBits:256, salt:_keys.__strIV(p)});
-      obj[p]['key'] = o.aes.encryptText(key, p, {nBits:256, salt:_keys.__strIV(p)});
-      _storage.__sI(o.storage, _keys.__id(), JSON.stringify(obj));
-     }
-     o.callback = y;
-     _main.__do(o, {'k': true});
+    var y = function(){
+     var z = JSON.parse(this);
+     var email = (z.email) ? z.email : o.appID;
+     var key = (z.key) ? z.key : false;
+     var p = _keys.__gUUID(null); var obj = {}; obj[p] = {};
+     obj[p]['email'] = o.aes.encryptText(email, p, {nBits:256, salt:_keys.__strIV(p)});
+     obj[p]['key'] = o.aes.encryptText(key, p, {nBits:256, salt:_keys.__strIV(p)});
+     _storage.__sI(o.storage, _keys.__id(), JSON.stringify(obj));
     }
+    o.callback = y;
+    _main.__do(o, {'k': true});
     return true;
    },
 
@@ -151,10 +151,10 @@
     * @function __sK
     * @abstract Attempts to find email address for user specific key retrieval
     */
-   __sK: function(o, z){
+   __sK: function(o){
     var _r = false;
-    if (_validation.__szCk(z)>0){
-     $.each(z, function(a,b){
+    if (_validation.__szCk(o.keys)>0){
+     $.each(o.keys, function(a,b){
       var _x = new RegExp('/[0-9a-z-_.]{2,45}\@[0-9a-z-_.]{2,45}\.[a-z]{2,4}/gi');
       var _e = o.aes.decryptText(b['email'], a, {nBits:256, salt:_keys.__strIV(a)});
       if (_x.test(_e)){
