@@ -21,7 +21,7 @@
     var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
      e.preventDefault();
-     _main.__gF(opts);
+     _main.__do(opts, _main.__gF(opts));
     });
     return true;
    },
@@ -127,18 +127,13 @@
     * @abstract Performs object creation of non-null form elements
     */
    __gF: function(o){
-    var _eObj = {};
-    var _obj = $('#'+o.formID.attr('id')).serializeArray();
-    $.each(_obj, function(a,b){
-     if (typeof b=='object'){
-      $.each(b, function(c,d){
-       // each key/value pair to be encrypted
-      });
-     } else {
-      // should never reach this
+    var obj={};
+    $.each($('#'+o.formID.attr('id')+' > :input'), function(k, v){
+     if ((_validation.__vStr(v.value))&&(_validation.__vStr(v.name))){
+      obj[v.name] = (parseInt(v.value.length)>80) ? _strings.__sSplt(v.value) : v.value;
      }
     });
-    return _eObj;
+    return _encrypt.__eO(o, obj);
    }
   }
 
@@ -254,9 +249,9 @@
     *           on object and returns results as object
     */
    __eO: function(o, obj){
-    var x = {}; var y = this.__certParser(uP(o));
-    this.__iP(o, y);
-    if (szCk(obj)>0){
+    var x = {}; var y = _encrypt.__certParser(o.use);
+    _encrypt.__iP(y);
+    if (_validation.__szCk(obj)>0){
      $.each(obj, function(a, b){
       if (typeof b==='object'){
        x[a]={};
@@ -286,10 +281,11 @@
     * @abstract Returns external pidCrypt.RSA object once certParse()
     *           generates necessary bytes from public key
     */
-   __iP: function(o, pub){
+   __iP: function(pub){
+    var rsa = false;
     if (pub.b64){
      var x = pidCryptUtil.decodeBase64(pub.b64);
-     var rsa = new pidCrypt();
+     rsa = new pidCrypt();
      var asn = pidCrypt.ASN1.decode(pidCryptUtil.toByteArray(x));
      var tree = asn.toHexTree();
      pidCrypt.RSA.prototype.setPublicKeyFromASN(tree);
@@ -373,7 +369,7 @@
      var x='';
      $.each(args, function(a, b){
       if (typeof b==='object'){
-       this.__serialize(b);
+       x += _strings.__serialize(b);
       } else {
        x+=a+'='+b+'&';
       }
