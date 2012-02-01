@@ -58,7 +58,7 @@ $('#form').pidCrypt({callback:function(){ console.log('foo'); }});
 Example of enabling a custom CSRF token (sets the X-Alt-Referer header value)
 
 ```javascript
-$('#form').pidCrypt({appID:<?php echo $_SESSION['csrf-token']; ?>});
+$('#form').pidCrypt({appID:'<?php echo $_SESSION['csrf-token']; ?>'});
 ```
 
 Author: Jason Gerfen <jason.gerfen@gmail.com>
