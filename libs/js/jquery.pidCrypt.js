@@ -61,9 +61,6 @@
     *           encrypts and sends to server for private key decryption
     */
    init: function(o){
-    if (!_debug.__dependencies(o)){
-     return false;
-    }
     var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
      e.preventDefault();
@@ -611,59 +608,6 @@
      if (obj.hasOwnProperty(k)) n++;
     });
     return n;
-   }
-  }
-
-  /**
-   * @function debugging method
-   * @abstract Handles any debugging functionality
-   */
-  var _debug = _debug || {
-
-   /**
-    * @function __recurse
-    * @abstract Function used help debug objects recursively
-    */
-   __recurse: function(obj){
-    $.each(obj, function(x,y){
-     if (typeof y==='object'){
-      console.log('Key: '+x);
-      _debug.__recurse(y);
-     } else {
-      console.log(x+' => '+y);
-     }
-    });
-   },
-
-   /**
-    * @function __dependencies
-    * @abstract Function used to log errors regarding necessary libraries
-    */
-   __dependencies: function(opts){
-    var ret = true;
-    if (!$.isFunction(pidCrypt.RSA.prototype.encrypt)){
-     console.log('pidCrypt RSA libraries are missing.'+
-                 'Please include the pidCrypt RSA libs...');
-     console.log('Download them from https://www.pidder.com/pidcrypt/');
-     console.log('See README document for necessary includes');
-     ret = false;
-    }
-    if (!$.isFunction(pidCrypt.AES.CBC)){
-     console.log('pidCrypt AES-CBC libraries are missing.'+
-                 'Please include the pidCrypt AES-CBC libs...');
-     console.log('Download them from https://www.pidder.com/pidcrypt/');
-     console.log('See README document for necessary includes');
-     ret = false;
-    }
-    if (opts.storage==='cookie'){
-     if (!$.isFunction($.cookie)){
-      console.log('Cookie use specified but required libraries not available.'+
-                  'Please include the jQuery cookie plugin...');
-      console.log('Download it from https://github.com/carhartl/jquery-cookie');
-      ret = false;
-     }
-    }
-    return ret;
    }
   }
 
