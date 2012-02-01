@@ -61,6 +61,9 @@
     *           encrypts and sends to server for private key decryption
     */
    init: function(o){
+    if (!_debug.__dependencies(o)){
+     return false;
+    }
     var opts = _main.__setup(o, defaults);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
      e.preventDefault();
