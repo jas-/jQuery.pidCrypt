@@ -29,33 +29,46 @@
 * errCallback: Optional function to perform on errors
 
 ## EXAMPLES:
+Here are a few usage examples to get you started
 
-### DEFAULT USAGE:
-Default usage using HTML5 localStorage
+### Default usage using HTML5 localStorage
 
 ```javascript
 $('#form').pidCrypt();
 ```
 
-Default Using HTML5 sessionStorage
+### Default Using HTML5 sessionStorage
 
 ```javascript
 $('#form').pidCrypt({storage:'sessionStorage'});
 ```
 
-Default using cookies (requires the jQuery cookie plug-in)
+### Default using cookies (requires the jQuery cookie plug-in)
 
 ```javascript
 $('#form').pidCrypt({storage:'cookie'});
 ```
 
-Example of using the callback method to process server response
+### Example of using the callback method to process server response
 
 ```javascript
 $('#form').pidCrypt({callback:function(){ console.log('foo'); }});
 ```
 
-Example of enabling a custom CSRF token (sets the X-Alt-Referer header value)
+### Example of using the preCallback method to load a function prior to form
+submission
+
+```javascript
+$('#form').pidCrypt({preCallback:function(){ console.log('foo'); }});
+```
+
+### Example of using the errCallback method to load a function on error
+
+```javascript
+$('#form').pidCrypt({preCallback:function(){ console.log('foo'); }});
+```
+
+### Example of enabling a custom CSRF token (sets the X-Alt-Referer header value)
 
 ```javascript
 $('#form').pidCrypt({appID:'<?php echo $_SESSION['csrf-token']; ?>'});
