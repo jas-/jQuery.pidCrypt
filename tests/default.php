@@ -9,7 +9,22 @@ if (!file_exists('config.php')) {
 }
 include 'config.php';
 
-/* does the class exist */
+/* load the libraries class */
+if (!file_exists('../libs/classes/class.libraries.php')) {
+ exit('../libs/classes/class.libraries.php does not exist');
+}
+include '../libs/classes/class.libraries.php';
+
+/* handle for libraries object */
+$libs = new libraries;
+
+/* load the ajax class */
+if (!file_exists('../libs/classes/class.ajax.php')) {
+ exit('../libs/classes/class.ajax.php does not exist');
+}
+include '../libs/classes/class.ajax.php';
+
+/* load the openssl class */
 if (!file_exists('../libs/classes/class.openssl.php')) {
  exit('../libs/classes/class.openssl.php does not exist');
 }
@@ -17,30 +32,28 @@ include '../libs/classes/class.openssl.php';
 
 /* verify settings */
 if (!verify($settings)) {
- exit('Please configure the config.php file');
+ exit($libs->JSONencode(array('error'=>'Please configure the config.php file')));
 }
 
 /* handle for class object */
 $openssl = openssl::instance($settings);
 
 if (!is_object($openssl)) {
- exit('An error occured when initializing the OpenSSL class');
-}
-
-if (strcmp($_SERVER['HTTP_X_REQUESTED_WITH'], 'XMLHttpRequest')!==0){
- exit('An XMLHttpRequest was not made');
-}
-
-if (strcmp($_SERVER['HTTP_X_ALT_REFERER'], 'jQuery.pidCrypt')!==0){
- exit('The X-Alt-Referer information recieved is invalid');
+ exit($libs->JSONencode(array('error'=>'An error occured when initializing the OpenSSL class')));
 }
 
 if (!empty($_POST)) {
 
+ /* ensure our ajax request passes required checks */
+ $ajax = new ajax;
+ if (!$ajax){
+  exit($libs->JSONencode(array('error'=>'AJAX request did not pass sanity checks')));
+ }
+
  /* make sure we have our necessary data */
- if ((empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key']))||
-     (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key']))||
-     (empty($_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate']))){
+ if ((empty($_SESSION[$libs->_getRealIPv4().'-private-key']))||
+     (empty($_SESSION[$libs->_getRealIPv4().'-public-key']))||
+     (empty($_SESSION[$libs->_getRealIPv4().'-certificate']))){
   create($settings, $openssl);
  }
 
@@ -50,28 +63,14 @@ if (!empty($_POST)) {
   * add the support after this conditional
   */
  if ((!empty($_POST['k']))&&($_POST['k']==='true')) {
-
-  /* Because we want to avoid MITM use AES to encrypt public key first */
-  if ((!empty($_POST['u']))&&(!empty($_POST['i']))){
-   echo $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'];
-   // until I can resolve the problems with the pidCrypt AES-CBC to
-   // PHP's OpenSSL AES-CBC decryption formats this is disabled
-   //echo $openssl->aesEnc($_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'],
-   //                      $_POST['u'], $_POST['i'], false, 'aes-256-cbc');
-  } else {
-   echo $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'];
-  }
-  exit;
+  exit($libs->JSONencode(array('key'=>$_SESSION[$libs->_getRealIPv4().'-public-key'])));
  }
 
  /*
   * If you wish to do anything further such as add a response that the data was recieved by the server etc
   * add it here (delete this because it returns the decrypted examples)
   */
- $response = 'Data recieved and processed...<br/>';
- $response .= response(helper($_POST, $openssl));
- echo $response;
- exit;
+ exit($libs->JSONencode(array('success'=>response(helper($_POST, $openssl, $libs), $libs))));
 }
 
 /*
@@ -80,16 +79,16 @@ if (!empty($_POST)) {
 function create($settings, $openssl)
 {
  /* Generate the private key */
- $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'] = $openssl->genPriv($_SERVER['REMOTE_ADDR']);
+ $_SESSION[$$libs->_getRealIPv4().'-private-key'] = $openssl->genPriv($libs->_getRealIPv4());
 
  /* Get the public key */
  $k = $openssl->genPub();
- $_SESSION[$_SERVER['REMOTE_ADDR'].'-public-key'] = $k['key'];
+ $_SESSION[$libs->_getRealIPv4().'-public-key'] = $k['key'];
 
  /* Create certificate */
- $_SESSION[$_SERVER['REMOTE_ADDR'].'-certificate'] = $openssl->createx509($settings,
-                                                                          $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'],
-                                                                          $_SERVER['REMOTE_ADDR']);
+ $_SESSION[$libs->_getRealIPv4().'-certificate'] = $openssl->createx509($settings,
+                                                                        $_SESSION[$libs->_getRealIPv4().'-private-key'],
+                                                                        $libs->_getRealIPv4());
 }
 
 /*
@@ -111,21 +110,27 @@ function verify($array)
  * using public keys we may need to process an
  * array of encrypted data from the client
  */
-function helper($array, $openssl)
+function helper($array, $openssl, $libs)
 {
  if (is_array($array)) {
   foreach($array as $key => $value) {
    if (is_array($value)) {
     foreach($value as $k => $v) {
-     $b[$k] = $openssl->privDenc($v, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'], $_SERVER['REMOTE_ADDR']);
+     $b[$k] = $openssl->privDenc($v,
+                                 $_SESSION[$libs->_getRealIPv4().'-private-key'],
+                                 $libs->_getRealIPv4());
     }
     $a[$key] = combine($b);
    } else {
-    $a[$key] = $openssl->privDenc($value, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'], $_SERVER['REMOTE_ADDR']);
+    $a[$key] = $openssl->privDenc($value,
+                                  $_SESSION[$libs->_getRealIPv4().'-private-key'],
+                                  $libs->_getRealIPv4());
    }
   }
  } else {
-  $a = $openssl->privDenc($array, $_SESSION[$_SERVER['REMOTE_ADDR'].'-private-key'], $_SERVER['REMOTE_ADDR']);
+  $a = $openssl->privDenc($array,
+                          $_SESSION[$libs->_getRealIPv4().'-private-key'],
+                          $libs->_getRealIPv4());
  }
  return $a;
 }
@@ -133,12 +138,8 @@ function helper($array, $openssl)
 /*
  * handle encoding of responses
  */
-function response($array){
- if (!function_exists('json_encode')) {
-  return arr2json($array);
- } else {
-  return json_encode($array);
- }
+function response($array, $libs){
+ return $libs->JSONencode($array);
 }
 
 /*
@@ -159,27 +160,6 @@ function combine($array) {
   $a = $array;
  }
  return $a;
-}
-
-/*
- * Use these if json_encode not available
- */
-function arr2json($array)
-{
- if (is_array($array)) {
-  foreach($array as $key => $value) $json[] = $key . ':' . php2js($value);
-  if(count($json)>0) return '{'.implode(',',$json).'}';
-  else return '';
- }
-}
-
-function php2js($value)
-{
- if(is_array($value)) return arr2json($val);
- if(is_string($value)) return '"'.addslashes($value).'"';
- if(is_bool($value)) return 'Boolean('.(int) $value.')';
- if(is_null($value)) return '""';
- return $value;
 }
 
 ?>
