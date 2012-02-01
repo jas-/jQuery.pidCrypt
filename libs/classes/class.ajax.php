@@ -112,7 +112,7 @@ class ajax
  private function _success()
  {
   exit($this->libs->JSONencode(array('success'=>'All validation checks passed',
-                               'details'=>$this->_details())));
+                                     'details'=>$this->_details())));
  }
 
  /**
@@ -122,7 +122,7 @@ class ajax
  private function _error()
  {
   exit($this->libs->JSONencode(array('error'=>'Necessary sanitation checks were not included on request.',
-                               'details'=>$this->_details())));
+                                     'details'=>$this->_details())));
  }
 
 }
