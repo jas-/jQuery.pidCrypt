@@ -62,7 +62,7 @@ if (!empty($_POST)) {
   * If you used a database to store existing keys
   * add the support after this conditional
   */
- if ((!empty($_POST['k']))&&($_POST['k']==='true')) {
+ if ((!empty($_POST['k']))&&($_POST['k']==='true')){
   exit($libs->JSONencode(array('key'=>$_SESSION[$libs->_getRealIPv4().'-public-key'])));
  }
 

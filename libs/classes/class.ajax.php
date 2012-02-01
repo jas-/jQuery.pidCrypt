@@ -24,24 +24,29 @@
 class ajax
 {
 
+ /**
+  *  @var private object
+  */
  private $libs;
 
  /**
   *! @function __construct
-  *  @abstract Class loader
+  *  @abstract Load and return a boolean for the current AJAX request
   */
  public function __construct()
  {
   $this->libs = new libraries;
+
   $post = (!empty($_POST)) ?
-   $this->libs->_serialize($_POST) : md5($_SESSION[$this->libs->_getRealIPv4()]);
+    $this->libs->_serialize($_POST) :
+     md5($_SESSION[$this->libs->libs->_getRealIPv4()]);
 
   if ((!$this->__vRequest(getenv('HTTP_X_REQUESTED_WITH')))||
       (!$this->__vCSRF(getenv('HTTP_X_ALT_REFERER'), $_SESSION[$this->libs->_getRealIPv4()]))||
       (!$this->__vCheckSum(getenv('HTTP_CONTENT_MD5'), $post))){
-   $this->index('success');
+   return true;
   } else {
-   $this->index('error');
+   return false;
   }
  }
 
@@ -72,58 +77,5 @@ class ajax
   return (strcmp(base64_decode($header),
                  md5($this->libs->_serialize($array)))!==0) ? false : true;
  }
-
- /**
-  *! @function index
-  *  @abstract Calls default action to perform
-  */
- private function index($command)
- {
-  switch($command){
-   case 'success':
-    $this->_success();
-   case 'error':
-    $this->_error();
-   default:
-    $this->_error();
-  }
- }
-
- /**
-  *! @function _details
-  *  @abstract Simply retrieves the details of the request for demo purposes
-  */
- private function _details()
- {
-  return array('Remote address'=>$this->libs->_getRealIPv4(),
-               'Session ID'=>$_SESSION[$this->libs->_getRealIPv4()],
-               'X-Alt-Referer header'=>getenv('HTTP_X_ALT_REFERER'),
-               'Content-MD5 header'=>getenv('HTTP_CONTENT_MD5'),
-               'X-XSS-Protection'=>getenv('HTTP_X_XSS_PROTECTION'),
-               'X-Frame-Options'=>getenv('HTTP_X_FRAME_OPTIONS'),
-               'X-Forwarded-Proto'=>getenv('HTTP_X_FORWARDED_PROTO'),
-               'Serialized POST data'=>$this->libs->_serialize($_POST));
- }
-
- /**
-  *! @function _success
-  *  @abstract Demo success message function
-  */
- private function _success()
- {
-  exit($this->libs->JSONencode(array('success'=>'All validation checks passed',
-                                     'details'=>$this->_details())));
- }
-
- /**
-  *! @function _error
-  *  @abstract Demo error message function
-  */
- private function _error()
- {
-  exit($this->libs->JSONencode(array('error'=>'Necessary sanitation checks were not included on request.',
-                                     'details'=>$this->_details())));
- }
-
 }
 ?>
