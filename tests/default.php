@@ -54,7 +54,7 @@ if (!empty($_POST)) {
  if ((empty($_SESSION[$libs->_getRealIPv4().'-private-key']))||
      (empty($_SESSION[$libs->_getRealIPv4().'-public-key']))||
      (empty($_SESSION[$libs->_getRealIPv4().'-certificate']))){
-  create($settings, $openssl);
+  create($settings, $openssl, $libs);
  }
 
  /*
@@ -76,10 +76,10 @@ if (!empty($_POST)) {
 /*
  * Create private/public/certificate for referring machine (stored in session)
  */
-function create($settings, $openssl)
+function create($settings, $openssl, $libs)
 {
  /* Generate the private key */
- $_SESSION[$$libs->_getRealIPv4().'-private-key'] = $openssl->genPriv($libs->_getRealIPv4());
+ $_SESSION[$libs->_getRealIPv4().'-private-key'] = $openssl->genPriv($libs->_getRealIPv4());
 
  /* Get the public key */
  $k = $openssl->genPub();
