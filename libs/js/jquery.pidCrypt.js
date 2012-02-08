@@ -163,7 +163,7 @@
      _storage.__sI(o.storage, _keys.__id(), JSON.stringify(obj));
     }
     o.callback = y;
-    _main.__do(o, {'k': true});
+    _main.__do(o, {'key': true});
     return true;
    },
 
@@ -317,7 +317,6 @@
     retObj.aes = false;
     retObj.mode = '';
     retObj.bits = 0;
-    if (typeof lines!=='array') return false;
     for(var i=0; i< lines.length; i++){
      flag = lines[i].substr(0,9);
      if(i==1 && flag != 'Proc-Type' && flag.indexOf('M') == 0)//unencrypted cert?
