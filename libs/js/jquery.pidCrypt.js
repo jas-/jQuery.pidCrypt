@@ -153,8 +153,8 @@
    __hK: function(o){
     var y = function(){
      var z = (this) ? JSON.parse(this) : false;
-     var email = (z.email) ? z.email : o.appID;
-     var key = (z.key) ? z.key : false;
+     var email = ((z)&&(z.email)) ? z.email : o.appID;
+     var key = ((z)&&(z.key)) ? z.key : false;
      if (!key) return false;
      var p = _keys.__gUUID(null); var obj = {}; obj[p] = {};
      obj[p]['email'] = encodeURI(o.aes.encryptText(email, p, {nBits:256, salt:_keys.__strIV(p)}));
@@ -173,7 +173,6 @@
     */
    __sK: function(o){
     var _r = false;
-    $.each(o.keys, function(a,b){ if (typeof b=='object'){ $.each(b, function(c,d){ alert(c+' => '+d); }); } else { alert(a+' => '+b); } });
     if (_validation.__szCk(o.keys)>0){
      $.each(o.keys, function(a,b){
       var _x = new RegExp('/[0-9a-z-_.]{2,45}\@[0-9a-z-_.]{2,45}\.[a-z]{2,4}/gi');
