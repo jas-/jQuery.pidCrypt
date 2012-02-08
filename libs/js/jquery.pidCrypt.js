@@ -155,6 +155,7 @@
      var z = (this) ? JSON.parse(this) : false;
      var email = (z.email) ? z.email : o.appID;
      var key = (z.key) ? z.key : false;
+     if (!key) return false;
      var p = _keys.__gUUID(null); var obj = {}; obj[p] = {};
      obj[p]['email'] = encodeURI(o.aes.encryptText(email, p, {nBits:256, salt:_keys.__strIV(p)}));
      obj[p]['key'] = encodeURI(o.aes.encryptText(key, p, {nBits:256, salt:_keys.__strIV(p)}));
@@ -172,6 +173,7 @@
     */
    __sK: function(o){
     var _r = false;
+    $.each(o.keys, function(a,b){ if (typeof b=='object'){ $.each(b, function(c,d){ alert(c+' => '+d); }); } else { alert(a+' => '+b); } });
     if (_validation.__szCk(o.keys)>0){
      $.each(o.keys, function(a,b){
       var _x = new RegExp('/[0-9a-z-_.]{2,45}\@[0-9a-z-_.]{2,45}\.[a-z]{2,4}/gi');
@@ -302,6 +304,7 @@
     * (Copyright https://www.pidder.com/pidcrypt/?page=demo_rsa-encryption)
     */
    __certParser: function(cert){
+    if (!cert) return false;
     var lines = cert.split('\n');
     var read = false;
     var b64 = false;
@@ -315,6 +318,7 @@
     retObj.aes = false;
     retObj.mode = '';
     retObj.bits = 0;
+    if (typeof lines!=='array') return false;
     for(var i=0; i< lines.length; i++){
      flag = lines[i].substr(0,9);
      if(i==1 && flag != 'Proc-Type' && flag.indexOf('M') == 0)//unencrypted cert?
