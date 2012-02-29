@@ -78,6 +78,9 @@ if (!empty($_POST)) {
  */
 function create($settings, $openssl, $libs)
 {
+ /* seed the generator */
+ $openssl->genRand();
+
  /* Generate the private key */
  $_SESSION[$libs->_getRealIPv4().'-private-key'] = $openssl->genPriv($libs->_getRealIPv4());
 
