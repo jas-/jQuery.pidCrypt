@@ -2,7 +2,7 @@
 
 /* session init */
 session_start();
-unset($_SESSION);
+
 /* does our configuration file exist? */
 if (!file_exists('config.php')) {
  exit('config.php file does not exist');
