@@ -36,16 +36,16 @@
    * @abstract Default set of options for plug-in
    */
   var defaults = defaults || {
-   appID:        'jQuery.pidCrypt',
-   storage:      'local',
-   formID:       $(this),
-   type:         'json',
-   aes:          '',
-   keys:         {},
-   use:          '',
-   callback:     function(){},
-   preCallback:  function(){},
-   errCallback:  function(){}
+   appID:        'jQuery.pidCrypt',    // Configurable CSRF token
+   storage:      'local',              // Configurable storage mechanism
+   formID:       $(this),              // Global object for bound DOM object
+   type:         'json',               // Configurable method of communication
+   aes:          '',                   // Global object for AES encryption key
+   keys:         {},                   // Global object for client keyring
+   use:          '',                   // Global object for client public key
+   callback:     function(){},         // Configurable callback method on XMLHttpRequest success
+   preCallback:  function(){},         // Configurable callback prior to XMLHttpRequest
+   errCallback:  function(){}          // Configurable callback on XMLHttpRequest error
   };
 
   /**
@@ -128,6 +128,7 @@
     */
    __gF: function(o){
     var obj={};
+    o = (_validation.__vStr(o.use)) ? o.use : _main.__setup(o, defaults);
     $.each($('#'+o.formID.attr('id')+' :input, input:radio:selected, input:checkbox:checked, textarea'), function(k, v){
      if ((_validation.__vStr(v.value))&&(_validation.__vStr(v.name))){
       obj[v.name] = (parseInt(v.value.length)>80) ? _strings.__sSplt(v.value) : v.value;
