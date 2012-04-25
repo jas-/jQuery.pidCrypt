@@ -128,7 +128,9 @@
     */
    __gF: function(o){
     var obj={};
-    o = (_validation.__vStr(o.use)) ? o.use : _main.__setup(o, defaults);
+    if (!_validation.__vStr(o.use)) {
+     o = _main.__setup(o, defaults);
+    }
     $.each($('#'+o.formID.attr('id')+' :input, input:radio:selected, input:checkbox:checked, textarea'), function(k, v){
      if ((_validation.__vStr(v.value))&&(_validation.__vStr(v.name))){
       obj[v.name] = (parseInt(v.value.length)>80) ? _strings.__sSplt(v.value) : v.value;
