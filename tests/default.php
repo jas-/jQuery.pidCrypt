@@ -3,6 +3,8 @@
 /* session init */
 session_start();
 
+//echo '<pre>'; print_r($_SESSION); echo '</pre>';
+
 /* does our configuration file exist? */
 if (!file_exists('config.php')) {
  exit('config.php file does not exist');
@@ -52,8 +54,7 @@ if (!empty($_POST)) {
 
  /* make sure we have our necessary data */
  if ((empty($_SESSION[$libs->_getRealIPv4().'-private-key']))||
-     (empty($_SESSION[$libs->_getRealIPv4().'-public-key']))||
-     (empty($_SESSION[$libs->_getRealIPv4().'-certificate']))){
+     (empty($_SESSION[$libs->_getRealIPv4().'-public-key']))){
   create($settings, $openssl, $libs);
  }
 
@@ -86,9 +87,6 @@ function create($settings, $openssl, $libs)
 
  /* Get the public key */
  $_SESSION[$libs->_getRealIPv4().'-public-key'] = $openssl->genPub();
-
- /* Create certificate */
- $_SESSION[$libs->_getRealIPv4().'-certificate'] = $openssl->createx509($settings, $_SESSION[$libs->_getRealIPv4().'-private-key'], $libs->_getRealIPv4());
 }
 
 /*
