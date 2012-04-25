@@ -96,16 +96,13 @@
       } else {
        xhr.setRequestHeader('Content-MD5', pidCryptUtil.encodeBase64(pidCrypt.MD5(o.appID)));
       }
-      ((o.preCallback)&&($.isFunction(o.preCallback))) ?
-        o.preCallback(xhr) : false;
+      ((o.preCallback)&&($.isFunction(o.preCallback))) ? o.preCallback(xhr) : false;
      },
      success: function(x, status, xhr){
-      ((o.callback)&&($.isFunction(o.callback))) ?
-        o.callback.call(x) : console.log(x);
+      ((o.callback)&&($.isFunction(o.callback))) ? o.callback.call(x) : console.log(x);
      },
      error: function(xhr, status, error){
-      ((o.errCallback)&&($.isFunction(o.errCallback))) ?
-        o.errCallback.call(xhr, status, error) : false;
+      ((o.errCallback)&&($.isFunction(o.errCallback))) ? o.errCallback.call(xhr, status, error) : false;
      }
     });
    },
@@ -193,8 +190,7 @@
     *           as JSON object
     */
    __existing: function(o){
-    return (_storage.__gI(o.storage, _keys.__id())) ?
-      JSON.parse(_storage.__gI(o.storage, _keys.__id())) : false;
+    return (_storage.__gI(o.storage, _keys.__id())) ? JSON.parse(_storage.__gI(o.storage, _keys.__id())) : false;
    },
 
    /**
@@ -203,11 +199,7 @@
     *           configuration options with a hostname or url
     */
    __id: function(){
-    return (_validation.__vStr(location.host)) ?
-     location.host :
-      (_validation.__vStr(location.hostname)) ?
-       location.hostname :
-        'localhost';
+    return (_validation.__vStr(location.host)) ? location.host : (_validation.__vStr(location.hostname)) ? location.hostname : 'localhost';
    },
 
    /**
@@ -226,8 +218,7 @@
       uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r & 0xf];
      }
     }
-    return (len!==null) ? uuid.join('').replace(/-/g, '').split('',len).join('') :
-                          uuid.join('');
+    return (len!==null) ? uuid.join('').replace(/-/g, '').split('',len).join('') : uuid.join('');
    },
 
    /**
@@ -235,9 +226,7 @@
     * @abstract Generate IV from string
     */
    __strIV: function(s){
-    return (s) ?
-     encodeURI(s.replace(/-/gi, '').substring(16,Math.ceil(16*s.length)%s.length)) :
-     false;
+    return (s) ? encodeURI(s.replace(/-/gi, '').substring(16,Math.ceil(16*s.length)%s.length)) : false;
    }
   }
 
@@ -584,8 +573,7 @@
     * @abstract Function used combine string checking functions
     */
    __vStr: function(x){
-    return ((x===false)||(x.length===0)||(!x)||(x===null)||
-            (x==='')||(typeof x==='undefined')) ? false : true;
+    return ((x===false)||(x.length===0)||(!x)||(x===null)||(x==='')||(typeof x==='undefined')) ? false : true;
    },
 
    /**
