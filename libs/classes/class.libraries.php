@@ -52,7 +52,7 @@ class libraries
  function php2js($value)
  {
   if(is_array($value)) return arr2json($val);
-  if(is_string($value)) return '"'.addslashes($value).'"';
+  if(is_string($value)) return '"'.$value.'"';
   if(is_bool($value)) return 'Boolean('.(int) $value.')';
   if(is_null($value)) return '""';
   return $value;
