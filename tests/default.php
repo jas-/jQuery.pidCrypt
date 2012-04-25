@@ -2,7 +2,7 @@
 
 /* session init */
 session_start();
-
+unset($_SESSION);
 /* does our configuration file exist? */
 if (!file_exists('config.php')) {
  exit('config.php file does not exist');
@@ -88,9 +88,7 @@ function create($settings, $openssl, $libs)
  $_SESSION[$libs->_getRealIPv4().'-public-key'] = $openssl->genPub();
 
  /* Create certificate */
- $_SESSION[$libs->_getRealIPv4().'-certificate'] = $openssl->createx509($settings,
-                                                                        $_SESSION[$libs->_getRealIPv4().'-private-key'],
-                                                                        $libs->_getRealIPv4());
+ $_SESSION[$libs->_getRealIPv4().'-certificate'] = $openssl->createx509($settings, $_SESSION[$libs->_getRealIPv4().'-private-key'], $libs->_getRealIPv4());
 }
 
 /*
@@ -118,21 +116,15 @@ function helper($array, $openssl, $libs)
   foreach($array as $key => $value) {
    if (is_array($value)) {
     foreach($value as $k => $v) {
-     $b[$k] = $openssl->privDenc($v,
-                                 $_SESSION[$libs->_getRealIPv4().'-private-key'],
-                                 $libs->_getRealIPv4());
+     $b[$k] = $openssl->privDenc($v, $_SESSION[$libs->_getRealIPv4().'-private-key'], $libs->_getRealIPv4());
     }
     $a[$key] = combine($b);
    } else {
-    $a[$key] = $openssl->privDenc($value,
-                                  $_SESSION[$libs->_getRealIPv4().'-private-key'],
-                                  $libs->_getRealIPv4());
+    $a[$key] = $openssl->privDenc($value, $_SESSION[$libs->_getRealIPv4().'-private-key'], $libs->_getRealIPv4());
    }
   }
  } else {
-  $a = $openssl->privDenc($array,
-                          $_SESSION[$libs->_getRealIPv4().'-private-key'],
-                          $libs->_getRealIPv4());
+  $a = $openssl->privDenc($array, $_SESSION[$libs->_getRealIPv4().'-private-key'], $libs->_getRealIPv4());
  }
  return $a;
 }
