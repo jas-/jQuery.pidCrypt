@@ -62,7 +62,7 @@ if (!empty($_POST)) {
   * If you used a database to store existing keys
   * add the support after this conditional
   */
- if ((!empty($_POST['k']))&&($_POST['k']==='true')){
+ if ((!empty($_POST['key']))&&($_POST['key']==='true')){
   exit($libs->JSONencode(array('key'=>$_SESSION[$libs->_getRealIPv4().'-public-key'])));
  }
 
@@ -74,7 +74,7 @@ if (!empty($_POST)) {
 }
 
 /*
- * Create private/public/certificate for referring machine (stored in session)
+ * Create private/public/certificate for referring machine (stored in sessions)
  */
 function create($settings, $openssl, $libs)
 {
@@ -85,8 +85,7 @@ function create($settings, $openssl, $libs)
  $_SESSION[$libs->_getRealIPv4().'-private-key'] = $openssl->genPriv($libs->_getRealIPv4());
 
  /* Get the public key */
- $k = $openssl->genPub();
- $_SESSION[$libs->_getRealIPv4().'-public-key'] = $k['key'];
+ $_SESSION[$libs->_getRealIPv4().'-public-key'] = $openssl->genPub();
 
  /* Create certificate */
  $_SESSION[$libs->_getRealIPv4().'-certificate'] = $openssl->createx509($settings,
