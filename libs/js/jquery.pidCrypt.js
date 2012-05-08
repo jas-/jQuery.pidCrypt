@@ -62,6 +62,7 @@
     */
    init: function(o){
     var opts = _main.__setup(o, defaults);
+    _modal.__setup(opts);
     $('#'+opts.formID.attr('id')).on('submit', function(e){
      e.preventDefault();
      _main.__do(opts, _main.__gF(opts));
@@ -179,11 +180,10 @@
      $.each(o.keys, function(a,b){
       var _x = /[0-9a-z-_.]{2,45}\@[0-9a-z-_.]{2,45}\.[a-z]{2,4}/i;
       var _e = o.aes.decryptText(decodeURI(b['email']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))});
-      alert(_e+' => '+_x.test(_e));
-      if (_x.test(_e)){alert(1);
+      if (_x.test(_e)){
        _r = o.aes.decryptText(decodeURI(b['key']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))});
        return false;
-      } else {alert(2);
+      } else {
        _r = o.aes.decryptText(decodeURI(b['key']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))});
       }
      });
@@ -642,6 +642,23 @@
      if (obj.hasOwnProperty(k)) n++;
     });
     return n;
+   }
+  }
+
+  /**
+   * @method modal
+   * @abstract Modal object
+   */
+  var _modal = _modal || {
+
+   /**
+    * @function __setup
+    * @abstract Provides preliminary setup for new modal window
+    */
+   __setup: function(o){
+    alert(_validation.__szCk(o.keys));
+    var _win = '<div id="overlay"></div><div id="modal"><div id="content"></div></div>';
+    $('#'+o.formID.attr('name')).prepend(_win);
    }
   }
 
