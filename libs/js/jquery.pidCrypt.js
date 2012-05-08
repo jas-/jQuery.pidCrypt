@@ -36,7 +36,7 @@
    * @abstract Default set of options for plug-in
    */
   var defaults = defaults || {
-   appID:        'jQuery.pidCrypt',    // Configurable CSRF token
+   appID:        '',                   // Configurable CSRF token
    storage:      'local',              // Configurable storage mechanism
    formID:       $(this),              // Global object for bound DOM object
    type:         'json',               // Configurable method of communication
@@ -115,6 +115,7 @@
     var opts = $.extend({}, d, o);
     opts.aes = _encrypt.__sAES();
     opts.keys = _keys.__existing(opts);
+    opts.appID = (_validation.__vStr(opts.appID)) ? opts.appID : _keys.__gUUID(null);
     if (_validation.__szCk(opts.keys)<=0){
      _keys.__hK(opts);
     }
@@ -156,9 +157,9 @@
      var email = ((z)&&(z.email)) ? z.email : o.appID;
      var key = ((z)&&(z.key)) ? z.key : false;
      if (!key) return false;
-     var p = _keys.__gUUID(null); var obj = {}; obj[p] = {};
-     obj[p]['email'] = encodeURI(o.aes.encryptText(email, p, {nBits:256, salt:_keys.__strIV(p)}));
-     obj[p]['key'] = encodeURI(o.aes.encryptText(key, p, {nBits:256, salt:_keys.__strIV(p)}));
+     var obj = {}; obj[o.appID] = {};
+     obj[o.appID]['email'] = encodeURI(o.aes.encryptText(email, pidCrypt.SHA512(o.appID), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(o.appID))}));
+     obj[o.appID]['key'] = encodeURI(o.aes.encryptText(key, pidCrypt.SHA512(o.appID), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(o.appID))}));
      obj = $.extend({}, obj, _keys.__existing(o));
      _storage.__sI(o.storage, _keys.__id(), JSON.stringify(obj));
     }
@@ -175,12 +176,12 @@
     var _r = false;
     if (_validation.__szCk(o.keys)>0){
      $.each(o.keys, function(a,b){
-      var _x = new RegExp('/[0-9a-z-_.]{2,45}\@[0-9a-z-_.]{2,45}\.[a-z]{2,4}/gi');
-      var _e = o.aes.decryptText(decodeURI(b['email']), a, {nBits:256, salt:_keys.__strIV(a)});
+      var _x = /[0-9a-z-_.]{2,45}\@[0-9a-z-_.]{2,45}\.[a-z]{2,4}/gi;
+      var _e = o.aes.decryptText(decodeURI(b['email']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))});
       if (_x.test(_e)){
-       return o.aes.decryptText(decodeURI(b['key']), a, {nBits:256, salt:_keys.__strIV(a)});
+       return o.aes.decryptText(decodeURI(b['key']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))});
       } else {
-       _r = o.aes.decryptText(decodeURI(b['key']), a, {nBits:256, salt:_keys.__strIV(a)});
+       _r = o.aes.decryptText(decodeURI(b['key']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))});
       }
      });
     }
@@ -230,6 +231,41 @@
     */
    __strIV: function(s){
     return (s) ? encodeURI(s.replace(/-/gi, '').substring(16,Math.ceil(16*s.length)%s.length)) : false;
+   },
+
+   /**
+    * @function __hR
+    * @abstract Searches response for new keyring data if any
+    */
+   __hR: function(r, o){
+    var x = false;
+    if (_validation.__szCk(r)>0){
+     $.each(JSON.parse(r), function(a, b){
+      if ((a=='keyring')&&(!_keys.__hlpr(o, b.email))){
+       var obj = {}; obj[o.appID] = {};
+       obj[o.appID]['email'] = encodeURI(o.aes.encryptText(b.email, o.appID, {nBits:256, salt:_keys.__strIV(o.appID)}));
+       obj[o.appID]['key'] = encodeURI(o.aes.encryptText(b.key, o.appID, {nBits:256, salt:_keys.__strIV(o.appID)}));
+       obj = $.extend({}, obj, _keys.__existing(o));
+       _storage.__sI(o.storage, _keys.__id(), JSON.stringify(obj));
+      }
+     });
+    }
+    return x;
+   },
+
+   /**
+    * @function __hlpr
+    * @abstract Performs comparison on existing keyring entries for specified
+    *           email address
+    */
+   __hlpr: function(o, e){
+    var _r = false;
+    $.each(_keys.__existing(o), function(a, b){
+     if (o.aes.decryptText(decodeURI(b['email']), a, {nBits:256, salt:_keys.__strIV(a)})==e){
+      _r = true;
+     }
+    });
+    return _r;
    }
   }
 

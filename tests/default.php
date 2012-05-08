@@ -71,7 +71,8 @@ if (!empty($_POST)) {
   * If you wish to do anything further such as add a response that the data was recieved by the server etc
   * add it here (delete this because it returns the decrypted examples)
   */
- exit($libs->JSONencode(array('success'=>response(helper($_POST, $openssl, $libs), $libs))));
+ $x = response(helper($_POST, $openssl, $libs), $libs);
+ exit($libs->JSONencode(array('success'=>$x,'keyring'=>keyring($settings, $openssl, $libs, $x))));
 }
 
 /*
@@ -87,6 +88,26 @@ function create($settings, $openssl, $libs)
 
  /* Get the public key */
  $_SESSION[$libs->_getRealIPv4().'-public-key'] = $openssl->genPub();
+}
+
+/*
+ * Create a new keyring for the response to allow for multiple local public keys
+ */
+function keyring($s, $ssl, $libs, $d)
+{
+ $r = false;
+ if (!empty($d)){
+
+  /* decode object */
+  $obj = json_decode($d);
+
+  /* call create() */
+  create($s, $ssl, $libs);
+
+  /* create new array with public key and associated email */
+  $r = array('email'=>$obj->{'email'}, 'key'=>$_SESSION[$libs->_getRealIPv4().'-public-key']);
+ }
+ return $r;
 }
 
 /*
