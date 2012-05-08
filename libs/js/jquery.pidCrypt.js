@@ -661,6 +661,15 @@
     $('#overlay').css({'position':'fixed','top':0,'left':0,'width':'100%','height':'100%','background':'#000','opacity':0.5,'filter':'alpha(opacity=50)'});
     $('#modal').css({'position':'absolute','background':'rgba(0,0,0,0.2)','border-radius':'14px','padding':'8px'});
     $('#content').css({'border-radius':'8px','background':'#fff','padding':'20px'});
+    $('#keyring').on('click', _modal.__bind());
+   },
+
+   /**
+    * @function __bind
+    * @abstract Gets called when user selects their email address from modal window
+    */
+   __bind: function(){
+    __r($(this));
    },
 
    /**
