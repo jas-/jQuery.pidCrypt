@@ -656,9 +656,43 @@
     * @abstract Provides preliminary setup for new modal window
     */
    __setup: function(o){
-    alert(_validation.__szCk(o.keys));
-    var _win = '<div id="overlay"></div><div id="modal"><div id="content"></div></div>';
+    var _win = '<div id="overlay"></div><div id="modal"><div id="content">'+_modal.__aK(o)+'</div></div>';
     $('#'+o.formID.attr('name')).prepend(_win);
+    $('#overlay').css({'position':'fixed','top':0,'left':0,'width':'100%','height':'100%','background':'#000','opacity':0.5,'filter':'alpha(opacity=50)'});
+    $('#modal').css({'position':'absolute','background':'rgba(0,0,0,0.2)','border-radius':'14px','padding':'8px'});
+    $('#content').css({'border-radius':'8px','background':'#fff','padding':'20px'});
+   },
+
+   /**
+    * @function __aK
+    * @abstract Creates selectable list of current keys
+    */
+   __aK: function(o){
+    var _s = _validation.__szCk(o.keys);
+    var _d = (_s>=5) ? 5 : _s;
+    var _x = '';
+    if (_s>=3){
+     var _k = '';
+     _x = '<label for="keyring">Select your email:</label><select name="keyring" id="keyring" size="'+_d+'" multiple>';
+     $.each(o.keys, function(k, v){
+      _k = _modal.__hlpr(v['email'], k, o.aes);
+      var _a = /[0-9a-z-_.]{2,45}\@[0-9a-z-_.]{2,45}\.[a-z]{2,4}/i;
+      if (_a.test(_k)){
+       _x = _x + '<option value="'+_k+'">'+_k+'</option>';
+      }
+     });
+     _x = _x + '</select>';
+    }
+    return _x;
+   },
+
+   /**
+    * @function __hlpr
+    * @abstract Helper function for decrypting current set of email addresses
+    *           associated with public keys for modal window
+    */
+   __hlpr: function(_e, _k, _a){
+    return _a.decryptText(decodeURI(_e), pidCrypt.SHA512(_k), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(_k))});
    }
   }
 
