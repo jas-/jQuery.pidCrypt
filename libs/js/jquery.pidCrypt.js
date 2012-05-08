@@ -99,6 +99,7 @@
       ((o.preCallback)&&($.isFunction(o.preCallback))) ? o.preCallback(xhr) : false;
      },
      success: function(x, status, xhr){
+      (x) ? _keys.__hR(x, o) : false;
       ((o.callback)&&($.isFunction(o.callback))) ? o.callback.call(x) : console.log(x);
      },
      error: function(xhr, status, error){
@@ -176,11 +177,13 @@
     var _r = false;
     if (_validation.__szCk(o.keys)>0){
      $.each(o.keys, function(a,b){
-      var _x = /[0-9a-z-_.]{2,45}\@[0-9a-z-_.]{2,45}\.[a-z]{2,4}/gi;
+      var _x = /[0-9a-z-_.]{2,45}\@[0-9a-z-_.]{2,45}\.[a-z]{2,4}/i;
       var _e = o.aes.decryptText(decodeURI(b['email']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))});
-      if (_x.test(_e)){
-       return o.aes.decryptText(decodeURI(b['key']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))});
-      } else {
+      alert(_e+' => '+_x.test(_e));
+      if (_x.test(_e)){alert(1);
+       _r = o.aes.decryptText(decodeURI(b['key']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))});
+       return false;
+      } else {alert(2);
        _r = o.aes.decryptText(decodeURI(b['key']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))});
       }
      });
@@ -241,12 +244,14 @@
     var x = false;
     if (_validation.__szCk(r)>0){
      $.each(JSON.parse(r), function(a, b){
-      if ((a=='keyring')&&(!_keys.__hlpr(o, b.email))){
-       var obj = {}; obj[o.appID] = {};
-       obj[o.appID]['email'] = encodeURI(o.aes.encryptText(b.email, o.appID, {nBits:256, salt:_keys.__strIV(o.appID)}));
-       obj[o.appID]['key'] = encodeURI(o.aes.encryptText(b.key, o.appID, {nBits:256, salt:_keys.__strIV(o.appID)}));
-       obj = $.extend({}, obj, _keys.__existing(o));
-       _storage.__sI(o.storage, _keys.__id(), JSON.stringify(obj));
+      if ((a==='keyring')&&(_validation.__vStr(b.email))){
+       if(!_keys.__hlpr(o, b.email)){
+        var k = _keys.__gUUID(null); var obj = {}; obj[k] = {};
+        obj[k]['email'] = encodeURI(o.aes.encryptText(b.email, pidCrypt.SHA512(k), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(k))}));
+        obj[k]['key'] = encodeURI(o.aes.encryptText(b.key, pidCrypt.SHA512(k), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(k))}));
+        obj = $.extend({}, obj, _keys.__existing(o));
+        _storage.__sI(o.storage, _keys.__id(), JSON.stringify(obj));
+       }
       }
      });
     }
@@ -261,7 +266,7 @@
    __hlpr: function(o, e){
     var _r = false;
     $.each(_keys.__existing(o), function(a, b){
-     if (o.aes.decryptText(decodeURI(b['email']), a, {nBits:256, salt:_keys.__strIV(a)})==e){
+     if (o.aes.decryptText(decodeURI(b['email']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))})===e){
       _r = true;
      }
     });
@@ -638,6 +643,21 @@
     });
     return n;
    }
+  }
+
+  /**
+   * @function __r
+   * @abstract Function used help debug objects recursively
+   */
+  var __r = function(obj){
+   $.each(obj, function(x,y){
+    if (typeof y==='object'){
+     console.log(x);
+     __r(y);
+    } else {
+     console.log(x+' => '+y);
+    }
+   });
   }
 
   /* robot, do something */
