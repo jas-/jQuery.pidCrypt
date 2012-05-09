@@ -673,6 +673,7 @@
     $.each(o.keys, function(a, b){
      if (o.aes.decryptText(decodeURI(b['email']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))})==e){
       alert(o.aes.decryptText(decodeURI(b['key']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))}));
+      $('#keyring, #content, #modal, #overlay').hide();
      }
     });
    },
