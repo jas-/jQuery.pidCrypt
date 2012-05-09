@@ -661,7 +661,20 @@
     $('#overlay').css({'position':'fixed','top':0,'left':0,'width':'100%','height':'100%','background':'#000','opacity':0.5,'filter':'alpha(opacity=50)'});
     $('#modal').css({'position':'absolute','background':'rgba(0,0,0,0.2)','border-radius':'14px','padding':'8px'});
     $('#content').css({'border-radius':'8px','background':'#fff','padding':'20px'});
-    $('#'+o.formID.attr('id')).on('change', $('#keyring select option:selected'), function(event){ alert(event.data.attr('option')); });
+    $('#keyring').change(function(){ _modal.__e(o, $(this).val()); });
+   },
+
+   /**
+    * @function __e
+    * @abstract Executes the decryption and assignment within the global scope
+    *           of the user selected public key while closing the modal window
+    */
+   __e: function(o, e){
+    $.each(o.keys, function(a, b){
+     if (o.aes.decryptText(decodeURI(b['email']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))})==e){
+      alert(o.aes.decryptText(decodeURI(b['key']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))}));
+     }
+    });
    },
 
    /**
