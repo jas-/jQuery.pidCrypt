@@ -15,11 +15,13 @@
 * PHP < 5.3
 
 ## FEATURES:
+* Multiple key support
+* AES-256-CBC encryption of all keyring data
+* Modal window dialog for selection of appropriate keyring entry when multiple keys exist
 * HTML5 localStorage support
 * HTML5 sessionStorage support
 * Cookie support
 * Debugging output
-
 
 ## OPTIONS:
 * appID: Optional CSRF token
