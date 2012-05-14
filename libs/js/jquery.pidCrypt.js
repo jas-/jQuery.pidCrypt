@@ -62,7 +62,9 @@
     */
    init: function(o){
     var opts = _main.__setup(o, defaults);
+    $('body').removeData('use');
     _modal.__setup(opts);
+    $('#keyring').change(function(){ $('body').data('use', _modal.__e(opts, $(this).val())); opts = _main.__setup(o, defaults); });
     $('#'+opts.formID.attr('id')).on('submit', function(e){
      e.preventDefault();
      _main.__do(opts, _main.__gF(opts));
@@ -121,7 +123,7 @@
     if (_validation.__szCk(opts.keys)<=0){
      _keys.__hK(opts);
     }
-    opts.use = _keys.__sK(opts);
+    opts.use = ($('body').data('use')) ? $('body').data('use') : _keys.__sK(opts);
     return opts;
    },
 
@@ -633,7 +635,7 @@
     * @abstract Function used combine string checking functions
     */
    __vStr: function(x){
-    return ((x===false)||(x.length===0)||(!x)||(x===null)||(x==='')||(typeof x==='undefined')) ? false : true;
+    return ((x==false)||(x.length==0)||(!x)||(x==null)||(x=='')||(typeof x=='undefined')) ? false : true;
    },
 
    /**
@@ -675,10 +677,10 @@
     if (_validation.__szCk(o.keys)>=3){
      var _win = '<div id="overlay"></div><div id="modal"><div id="content">'+_modal.__aK(o)+'</div></div>';
      $('#'+o.formID.attr('name')).prepend(_win);
+     $('body').css({'overflow':'hidden'});
      $('#overlay').css({'position':'fixed','top':0,'left':0,'width':'100%','height':'100%','background':'#000','opacity':0.5,'filter':'alpha(opacity=50)'});
      $('#modal').css({'position':'absolute','background':'rgba(0,0,0,0.2)','border-radius':'14px','padding':'8px'});
      $('#content').css({'border-radius':'8px','background':'#fff','padding':'20px'});
-     $('#keyring').change(function(){ _modal.__e(o, $(this).val()); });
     }
    },
 
@@ -688,14 +690,14 @@
     *           of the user selected public key while closing the modal window
     */
    __e: function(o, e){
-    var _k = false;
     $.each(o.keys, function(a, b){
      if (_encrypt.__d(o.aes, b['email'], a)==e){
-      _k = _encrypt.__d(o.aes, b['key'], a);
+      o.use = _encrypt.__d(o.aes, b['key'], a);
       $('#keyring, #content, #modal, #overlay').hide();
+      $('body').css({'overflow':'auto'});
      }
     });
-    return _k;
+    return o.use;
    },
 
    /**
