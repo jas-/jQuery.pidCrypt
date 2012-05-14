@@ -13,6 +13,7 @@
 * jQuery cookie plugin (optional - http://plugins.jquery.com/files/jquery.cookie.js.txt)
 * OpenSSL < 0.9.8
 * PHP < 5.3
+* A modern browser (doh!)
 
 ## FEATURES:
 * Multiple key support

@@ -3,8 +3,6 @@
 /* session init */
 session_start();
 
-//echo '<pre>'; print_r($_SESSION); echo '</pre>';
-
 /* does our configuration file exist? */
 if (!file_exists('config.php')) {
  exit('config.php file does not exist');
@@ -43,7 +41,7 @@ $openssl = openssl::instance($settings);
 if (!is_object($openssl)) {
  exit($libs->JSONencode(array('error'=>'An error occured when initializing the OpenSSL class')));
 }
-
+print_r($_SESSION);
 if (!empty($_POST)) {
 
  /* ensure our ajax request passes required checks */
@@ -52,10 +50,10 @@ if (!empty($_POST)) {
   exit($libs->JSONencode(array('error'=>'AJAX request did not pass sanity checks')));
  }
 
- /* make sure we have our necessary data */
- if ((empty($_SESSION[$libs->_getRealIPv4().'-private-key']))||
-     (empty($_SESSION[$libs->_getRealIPv4().'-public-key']))){
-  create($settings, $openssl, $libs);
+ /* make sure we have our necessary data, creates new keypair if not */
+ if ((empty($_SESSION[$libs->_getRealIPv4()]['default']['private-key']))||
+     (empty($_SESSION[$libs->_getRealIPv4()]['default']['public-key']))){
+  create($settings, $openssl, $libs, 'default');
  }
 
  /*
@@ -64,30 +62,44 @@ if (!empty($_POST)) {
   * add the support after this conditional
   */
  if ((!empty($_POST['key']))&&($_POST['key']==='true')){
-  exit($libs->JSONencode(array('key'=>$_SESSION[$libs->_getRealIPv4().'-public-key'])));
+  exit($libs->JSONencode(array('key'=>$_SESSION[$libs->_getRealIPv4()]['default']['public-key'])));
+ }
+
+ /* was a post sent? search session keyring or use default private key */
+ if (empty($_POST)){
+  $t = search($_SESSION[$libs->_getRealIPv4()]);
+  $keys = (!empty($t)) ? $t : $_SESSION[$libs->_getRealIPv4()]['default']['private-key'];
  }
 
  /*
   * If you wish to do anything further such as add a response that the data was recieved by the server etc
   * add it here (delete this because it returns the decrypted examples)
   */
- $x = response(helper($_POST, $openssl, $libs), $libs);
+ $x = response(helper($_POST, $openssl, $libs), $libs, $_SESSION[$libs->_getRealIPv4()][$email]['private-key']);
  exit($libs->JSONencode(array('success'=>$x,'keyring'=>keyring($settings, $openssl, $libs, $x))));
+}
+
+/*
+ * Search existing sessions for something other then default key
+ */
+function search($array)
+{
+
 }
 
 /*
  * Create private/public/certificate for referring machine (stored in sessions)
  */
-function create($settings, $openssl, $libs)
+function create($settings, $openssl, $libs, $email)
 {
  /* seed the generator */
  $openssl->genRand();
 
  /* Generate the private key */
- $_SESSION[$libs->_getRealIPv4().'-private-key'] = $openssl->genPriv($libs->_getRealIPv4());
+ $_SESSION[$libs->_getRealIPv4()][$email]['private-key'] = $openssl->genPriv($libs->_getRealIPv4());
 
  /* Get the public key */
- $_SESSION[$libs->_getRealIPv4().'-public-key'] = $openssl->genPub();
+ $_SESSION[$libs->_getRealIPv4()][$email]['public-key'] = $openssl->genPub();
 }
 
 /*
@@ -102,10 +114,10 @@ function keyring($s, $ssl, $libs, $d)
   $obj = json_decode($d);
 
   /* call create() */
-  create($s, $ssl, $libs);
+  create($s, $ssl, $libs, $obj->{'email'});
 
   /* create new array with public key and associated email */
-  $r = array('email'=>$obj->{'email'}, 'key'=>$_SESSION[$libs->_getRealIPv4().'-public-key']);
+  $r = array('email'=>$obj->{'email'}, 'key'=>$_SESSION[$libs->_getRealIPv4()][$obj->{'email'}]['public-key']);
  }
  return $r;
 }
@@ -129,21 +141,21 @@ function verify($array)
  * using public keys we may need to process an
  * array of encrypted data from the client
  */
-function helper($array, $openssl, $libs)
+function helper($array, $openssl, $libs, $key)
 {
  if (is_array($array)) {
   foreach($array as $key => $value) {
    if (is_array($value)) {
     foreach($value as $k => $v) {
-     $b[$k] = $openssl->privDenc($v, $_SESSION[$libs->_getRealIPv4().'-private-key'], $libs->_getRealIPv4());
+     $b[$k] = $openssl->privDenc($v, $key, $libs->_getRealIPv4());
     }
     $a[$key] = combine($b);
    } else {
-    $a[$key] = $openssl->privDenc($value, $_SESSION[$libs->_getRealIPv4().'-private-key'], $libs->_getRealIPv4());
+    $a[$key] = $openssl->privDenc($value, $key, $libs->_getRealIPv4());
    }
   }
  } else {
-  $a = $openssl->privDenc($array, $_SESSION[$libs->_getRealIPv4().'-private-key'], $libs->_getRealIPv4());
+  $a = $openssl->privDenc($array, $key, $libs->_getRealIPv4());
  }
  return $a;
 }
