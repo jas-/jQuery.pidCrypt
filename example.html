@@ -48,7 +48,7 @@
     function _details(data) {
      if (typeof data=='object') {
       data = JSON.parse(data);
-      $j('#message').html('<p><b>Server response...</b><br/><i>(decrypted data is used in this as a demo only!)</i>. Please use implementation guide associated with this project.</p>');
+      $j('#message').html('<p><b>Server response...</b></p><p><i>(decrypted data is used in this as a demo only!)</i>. Please use implementation guide associated with this project.</p>');
       $j.each(data, function(k, v){
        if (typeof v=='object') {
         $j('#message').append('<b>'+k+'</b>:<br/>');
