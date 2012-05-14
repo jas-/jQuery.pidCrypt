@@ -55,20 +55,20 @@ $('#form').pidCrypt({storage:'cookie'});
 Example of using the callback method to process server response
 
 ```javascript
-$('#form').pidCrypt({callback:function(){ console.log('foo'); }});
+$('#form').pidCrypt({callback:function(){ console.log(this); }});
 ```
 
 Example of using the preCallback method to load a function prior to form
 submission
 
 ```javascript
-$('#form').pidCrypt({preCallback:function(){ console.log('foo'); }});
+$('#form').pidCrypt({preCallback:function(){ console.log(this); }});
 ```
 
 Example of using the errCallback method to load a function on error
 
 ```javascript
-$('#form').pidCrypt({preCallback:function(){ console.log('foo'); }});
+$('#form').pidCrypt({preCallback:function(){ console.log(this); }});
 ```
 
 Example of enabling a custom CSRF token (sets the X-Alt-Referer header value)
