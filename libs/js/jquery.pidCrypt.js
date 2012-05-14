@@ -160,8 +160,8 @@
      var key = ((z)&&(z.key)) ? z.key : false;
      if (!key) return false;
      var obj = {}; obj[o.appID] = {};
-     obj[o.appID]['email'] = encodeURI(o.aes.encryptText(email, pidCrypt.SHA512(o.appID), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(o.appID))}));
-     obj[o.appID]['key'] = encodeURI(o.aes.encryptText(key, pidCrypt.SHA512(o.appID), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(o.appID))}));
+     obj[o.appID]['email'] = _encrypt.__e(o.aes, email, o.appID);
+     obj[o.appID]['key'] = _encrypt.__e(o.aes, key, o.appID);
      obj = $.extend({}, obj, _keys.__existing(o));
      _storage.__sI(o.storage, _keys.__id(), JSON.stringify(obj));
     }
@@ -179,12 +179,12 @@
     if (_validation.__szCk(o.keys)>0){
      $.each(o.keys, function(a,b){
       var _x = /[0-9a-z-_.]{2,45}\@[0-9a-z-_.]{2,45}\.[a-z]{2,4}/i;
-      var _e = o.aes.decryptText(decodeURI(b['email']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))});
+      var _e = _encrypt.__d(o.aes, b['email'], a);
       if (_x.test(_e)){
-       _r = o.aes.decryptText(decodeURI(b['key']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))});
+       _r = _encrypt.__d(o.aes, b['key'], a);
        return false;
       } else {
-       _r = o.aes.decryptText(decodeURI(b['key']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))});
+       _r = _encrypt.__d(o.aes, b['key'], a);
       }
      });
     }
@@ -244,11 +244,11 @@
     var x = false;
     if (_validation.__szCk(r)>0){
      $.each(JSON.parse(r), function(a, b){
-      if ((a==='keyring')&&(_validation.__vStr(b.email))){
-       if(!_keys.__hlpr(o, b.email)){
+      if ((a==='keyring')&&(_validation.__vStr(b['email']))){
+       if(!_keys.__hlpr(o, b['email'])){
         var k = _keys.__gUUID(null); var obj = {}; obj[k] = {};
-        obj[k]['email'] = encodeURI(o.aes.encryptText(b.email, pidCrypt.SHA512(k), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(k))}));
-        obj[k]['key'] = encodeURI(o.aes.encryptText(b.key, pidCrypt.SHA512(k), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(k))}));
+        obj[k]['email'] = _encrypt.__e(o.aes, b['email'], k);
+        obj[k]['key'] = _encrypt.__e(o.aes, b['key'], k);
         obj = $.extend({}, obj, _keys.__existing(o));
         _storage.__sI(o.storage, _keys.__id(), JSON.stringify(obj));
        }
@@ -266,7 +266,7 @@
    __hlpr: function(o, e){
     var _r = false;
     $.each(_keys.__existing(o), function(a, b){
-     if (o.aes.decryptText(decodeURI(b['email']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))})===e){
+     if (_encrypt.__d(o.aes, b['email'], a)==e){
       _r = true;
      }
     });
@@ -390,6 +390,22 @@
      }
     }
     return retObj;
+   },
+
+   /**
+    * @function __e
+    * @abstract Encrypts specified string with specified pass & salt
+    */
+   __e: function(o, d, p){
+    return encodeURI(o.encryptText(d, pidCrypt.SHA512(p), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(p))}));
+   },
+
+   /**
+    * @function __d
+    * @abstract Decrypts specified string with specified pass & salt
+    */
+   __d: function(o, d, p){
+    return decodeURI(o.decryptText(d, pidCrypt.SHA512(p), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(p))}));
    }
   }
 
@@ -656,12 +672,14 @@
     * @abstract Provides preliminary setup for new modal window
     */
    __setup: function(o){
-    var _win = '<div id="overlay"></div><div id="modal"><div id="content">'+_modal.__aK(o)+'</div></div>';
-    $('#'+o.formID.attr('name')).prepend(_win);
-    $('#overlay').css({'position':'fixed','top':0,'left':0,'width':'100%','height':'100%','background':'#000','opacity':0.5,'filter':'alpha(opacity=50)'});
-    $('#modal').css({'position':'absolute','background':'rgba(0,0,0,0.2)','border-radius':'14px','padding':'8px'});
-    $('#content').css({'border-radius':'8px','background':'#fff','padding':'20px'});
-    $('#keyring').change(function(){ _modal.__e(o, $(this).val()); });
+    if (_validation.__szCk(o.keys)>=3){
+     var _win = '<div id="overlay"></div><div id="modal"><div id="content">'+_modal.__aK(o)+'</div></div>';
+     $('#'+o.formID.attr('name')).prepend(_win);
+     $('#overlay').css({'position':'fixed','top':0,'left':0,'width':'100%','height':'100%','background':'#000','opacity':0.5,'filter':'alpha(opacity=50)'});
+     $('#modal').css({'position':'absolute','background':'rgba(0,0,0,0.2)','border-radius':'14px','padding':'8px'});
+     $('#content').css({'border-radius':'8px','background':'#fff','padding':'20px'});
+     $('#keyring').change(function(){ _modal.__e(o, $(this).val()); });
+    }
    },
 
    /**
@@ -670,12 +688,14 @@
     *           of the user selected public key while closing the modal window
     */
    __e: function(o, e){
+    var _k = false;
     $.each(o.keys, function(a, b){
-     if (o.aes.decryptText(decodeURI(b['email']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))})==e){
-      alert(o.aes.decryptText(decodeURI(b['key']), pidCrypt.SHA512(a), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(a))}));
+     if (_encrypt.__d(o.aes, b['email'], a)==e){
+      _k = _encrypt.__d(o.aes, b['key'], a);
       $('#keyring, #content, #modal, #overlay').hide();
      }
     });
+    return _k;
    },
 
    /**
@@ -690,7 +710,7 @@
      var _k = '';
      _x = '<label for="keyring">Select your email:</label><select name="keyring" id="keyring" size="'+_d+'" multiple>';
      $.each(o.keys, function(k, v){
-      _k = _modal.__hlpr(v['email'], k, o.aes);
+      _k = _encrypt.__d(o.aes, v['email'], k);
       _a = /[0-9a-z-_.]{2,45}\@[0-9a-z-_.]{2,45}\.[a-z]{2,4}/i;
       if (_a.test(_k)){
        _x = _x + '<option value="'+_k+'">'+_k+'</option>';
@@ -699,15 +719,6 @@
      _x = _x + '</select>';
     }
     return _x;
-   },
-
-   /**
-    * @function __hlpr
-    * @abstract Helper function for decrypting current set of email addresses
-    *           associated with public keys for modal window
-    */
-   __hlpr: function(_e, _k, _a){
-    return _a.decryptText(decodeURI(_e), pidCrypt.SHA512(_k), {nBits:256, salt:_keys.__strIV(pidCrypt.SHA512(_k))});
    }
   }
 
