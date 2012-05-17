@@ -111,6 +111,22 @@ The project includes several core class files providing for easy implementation
 and extendability. These core class files can be located in the 'libs/classes/'
 folder.
 
+#### class.libraries.php
+Several re-usable functions reside within the class allowing such as retrieving
+the remote clients IPv4 address, generating a valid RFC-4122 GUID & serialization
+of strings.
+
+```php
+<?php
+if (!file_exists('../libs/classes/class.libraries.php')) {
+ exit('../libs/classes/class.libraries.php does not exist');
+}
+include '../libs/classes/class.libraries.php';
+
+/* handle for libraries object */
+$libs = new libraries;
+```
+
 #### class.ajax.php
 This class attempts to provide methods of preventing script injections, cross
 site request forgeries even going so far as to checksum the submitted form
@@ -129,22 +145,6 @@ $ajax = new ajax;
 if (!$ajax){
  exit($libs->JSONencode(array('error'=>'AJAX request did not pass sanity checks')));
 }
-```
-
-#### class.libraries.php
-Several re-usable functions reside within the class allowing such as retrieving
-the remote clients IPv4 address, generating a valid RFC-4122 GUID & serialization
-of strings.
-
-```php
-<?php
-if (!file_exists('../libs/classes/class.libraries.php')) {
- exit('../libs/classes/class.libraries.php does not exist');
-}
-include '../libs/classes/class.libraries.php';
-
-/* handle for libraries object */
-$libs = new libraries;
 ```
 
 #### class.openssl.php
