@@ -65,7 +65,7 @@ class ajax
   */
  private function __vCSRF($header, $token)
  {
-  return (strcmp($header, $token)!==0) ? true : false;
+  return (strcmp($header, $token)===0) ? true : false;
  }
 
  /**

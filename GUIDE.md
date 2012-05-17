@@ -95,6 +95,14 @@ $settings['dn']['commonName']             = 'Jason Gerfen';
 $settings['dn']['emailAddress']           = 'jason.gerfen@gmail.com';
 ```
 
+```php
+<?php
+if (!file_exists('config.php')) {
+ exit('config.php file does not exist');
+}
+include 'config.php';
+```
+
 ### Includes
 The project includes several core class files providing for easy implementation
 and extendability. These core class files can be located in the 'libs/classes/'
@@ -105,10 +113,36 @@ This class attempts to provide methods of preventing script injections, cross
 site request forgeries even going so far as to checksum the submitted form
 data.
 
+```php
+<?php
+/* load the ajax class */
+if (!file_exists('../libs/classes/class.ajax.php')) {
+ exit('../libs/classes/class.ajax.php does not exist');
+}
+include '../libs/classes/class.ajax.php';
+
+/* ensure our ajax request passes required checks */
+$ajax = new ajax;
+if (!$ajax){
+ exit($libs->JSONencode(array('error'=>'AJAX request did not pass sanity checks')));
+}
+```
+
 #### class.libraries.php
 Several re-usable functions reside within the class allowing such as retrieving
 the remote clients IPv4 address, generating a valid RFC-4122 GUID & serialization
 of strings.
+
+```php
+<?php
+if (!file_exists('../libs/classes/class.libraries.php')) {
+ exit('../libs/classes/class.libraries.php does not exist');
+}
+include '../libs/classes/class.libraries.php';
+
+/* handle for libraries object */
+$libs = new libraries;
+```
 
 #### class.openssl.php
 An easy to use interface to PHP's OpenSSL functionality. Methods exist to seed
@@ -116,4 +150,12 @@ the random number generators, generate password protected private keys, derive
 public keys, encrypt & decrypt (both symmetric and asymmetric cihpers) as well
 as sign and validate signed data.
 
+```php
+<?php
+if (!file_exists('../libs/classes/class.openssl.php')) {
+ exit('../libs/classes/class.openssl.php does not exist');
+}
+include '../libs/classes/class.openssl.php';
+```
 
+### 
