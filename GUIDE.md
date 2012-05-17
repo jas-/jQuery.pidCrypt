@@ -49,7 +49,8 @@ here I will only provide the *recommended* argument.
  <script>
   $(document).ready(function(){
    $('#form-id').pidCrypt({
-    appID:'<?php echo $_SESSION[$libs->_getRealIPv4()]["token"]; ?>'
+    appID:'<?php echo $_SESSION[$libs->_getRealIPv4()]["token"]; ?>',
+    callback: function(data){ console.log(data); }
    });
   });
  </script>
@@ -57,6 +58,6 @@ here I will only provide the *recommended* argument.
 
 Simply echo out the server generated CSRF token to make the client aware. The
 AJAX framework which accompanies this project uses customized headers to help
-with data integrity.
+with data integrity in various manners.
    
-## 
+### 
