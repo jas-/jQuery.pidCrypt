@@ -39,10 +39,10 @@ class ajax
 
   $post = (!empty($_POST)) ?
     $this->libs->_serialize($_POST) :
-     md5($_SESSION[$this->libs->libs->_getRealIPv4()]);
+     md5($_SESSION[$this->libs->libs->_getRealIPv4()]['token']);
 
   if ((!$this->__vRequest(getenv('HTTP_X_REQUESTED_WITH')))||
-      (!$this->__vCSRF(getenv('HTTP_X_ALT_REFERER'), $_SESSION[$this->libs->_getRealIPv4()]))||
+      (!$this->__vCSRF(getenv('HTTP_X_ALT_REFERER'), $_SESSION[$this->libs->_getRealIPv4()]['token']))||
       (!$this->__vCheckSum(getenv('HTTP_CONTENT_MD5'), $post))){
    return true;
   } else {

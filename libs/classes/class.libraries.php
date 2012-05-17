@@ -10,8 +10,8 @@ class libraries
  */
  function _serialize($array)
  {
-  if (count($array)>0){
-   $x = '';
+  $x = '';
+  if ((is_array($array))&&(count($array)>0)){
    foreach($array as $key => $value){
     $x .= $key.'='.$value.'&';
    }
