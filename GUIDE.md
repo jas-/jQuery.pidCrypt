@@ -1,6 +1,6 @@
 #jQuery.pidCrypt an implementation guide
 
-## REQUIREMENTS:
+## Requirements:
 * jQuery libraries (required - http://www.jquery.com)
 * pidCrypt RSA & AES libraries (required - https://www.pidder.com/pidcrypt/)
 * jQuery cookie plugin (optional - http://plugins.jquery.com/files/jquery.cookie.js.txt)
@@ -8,7 +8,12 @@
 * PHP < 5.3
 * A modern browser (doh!)
 
-## INCLUDES:
+
+## Client setup
+Here is a simple method of getting the necessary requirements in place to
+begin implementing this project.
+
+### Includes:
 The necessary libraries must be included. In the following example I am
 including the minified versions of the pidCrypt JS libraries as well as the
 CDN minified version of the latest stable jQuery libraries and finally
@@ -35,7 +40,7 @@ including the minified version of the client for this project.
  <script src="libs/js/jquery.pidCrypt.min.js"></script>
 ```
 
-## BINDING:
+### Binding:
 Next bind the plug-in to the form you wish to provide RSA public key
 encryption for. There are several options available for the plug-in however
 here I will only provide the *recommended* argument.
@@ -54,3 +59,4 @@ Simply echo out the server generated CSRF token to make the client aware. The
 AJAX framework which accompanies this project uses customized headers to help
 with data integrity.
    
+## 
