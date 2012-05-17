@@ -3,7 +3,7 @@
 /* session init */
 session_start();
 
-/* fix sync problems */
+/* fix sync problems or delete session file */
 //unset($_SESSION); exit();
 
 /* does our configuration file exist? */
