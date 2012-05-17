@@ -64,9 +64,6 @@ Here we go over the necessary server settings and requirements as well as
 code flow.
 
 ### configuration
-A working example can be found in the 'tests' folder. Two scripts exist,
-'default.php' & 'config.php'.
-
 A sample configuration was deemed necessary to clarify the requirements of the
 PHP OpenSSL extension. Two arrays are necessary, one specifies the runtime
 configuration options including key size, algorithm for signing etc. Please
@@ -74,6 +71,7 @@ see http://www.php.net/manual/en/function.openssl-csr-new.php for more
 information about this array's available options.
 
 ```php
+<?php
 $settings['config']['cnf']                = array('config'=>'openssl.cnf',
                                                   'x509_extensions'=>'usr_cert');
 $settings['config']['expires']            = 365;
@@ -88,6 +86,7 @@ is used. Please see http://www.php.net/manual/en/function.openssl-csr-new.php fo
 more information on its options and use.
 
 ```php
+<?php
 $settings['dn']['countryName']            = 'US';
 $settings['dn']['stateOrProvinceName']    = 'Utah';
 $settings['dn']['localityName']           = 'Salt Lake City';
