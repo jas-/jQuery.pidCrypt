@@ -60,6 +60,10 @@ AJAX framework which accompanies this project uses customized headers to help
 with data integrity in various manners.
    
 ## Server setup
+Here we go over the necessary server settings and requirements as well as
+code flow.
+
+### configuration
 A working example can be found in the 'tests' folder. Two scripts exist,
 'default.php' & 'config.php'.
 
