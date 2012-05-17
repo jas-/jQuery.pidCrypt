@@ -42,7 +42,7 @@ including the minified version of the client for this project.
 ### Binding:
 Next bind the plug-in to the form you wish to provide RSA public key
 encryption for. There are several options available for the plug-in however
-here I will only provide the *recommended* argument.
+here I will only provide the *recommended* arguments.
    
 ```javascript
  <script>
@@ -52,7 +52,6 @@ here I will only provide the *recommended* argument.
     callback: function(data){ console.log(data); }
    });
   });
- </script>
 ```
 
 Simply echo out the server generated CSRF token to make the client aware. The
@@ -95,4 +94,5 @@ $settings['dn']['organizationalUnitName'] = 'Plug-in for easy implementation of 
 $settings['dn']['commonName']             = 'Jason Gerfen';
 $settings['dn']['emailAddress']           = 'jason.gerfen@gmail.com';
 ```
+
 
