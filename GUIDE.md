@@ -62,7 +62,7 @@ with data integrity in various manners.
 Here we go over the necessary server settings and requirements as well as
 code flow.
 
-### configuration
+### Configuration
 A sample configuration was deemed necessary to clarify the requirements of the
 PHP OpenSSL extension. Two arrays are necessary, one specifies the runtime
 configuration options including key size, algorithm for signing etc. Please
@@ -94,5 +94,26 @@ $settings['dn']['organizationalUnitName'] = 'Plug-in for easy implementation of 
 $settings['dn']['commonName']             = 'Jason Gerfen';
 $settings['dn']['emailAddress']           = 'jason.gerfen@gmail.com';
 ```
+
+### Includes
+The project includes several core class files providing for easy implementation
+and extendability. These core class files can be located in the 'libs/classes/'
+folder.
+
+#### class.ajax.php
+This class attempts to provide methods of preventing script injections, cross
+site request forgeries even going so far as to checksum the submitted form
+data.
+
+#### class.libraries.php
+Several re-usable functions reside within the class allowing such as retrieving
+the remote clients IPv4 address, generating a valid RFC-4122 GUID & serialization
+of strings.
+
+#### class.openssl.php
+An easy to use interface to PHP's OpenSSL functionality. Methods exist to seed
+the random number generators, generate password protected private keys, derive
+public keys, encrypt & decrypt (both symmetric and asymmetric cihpers) as well
+as sign and validate signed data.
 
 
