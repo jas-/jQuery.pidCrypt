@@ -68,13 +68,21 @@ if (!empty($_POST)) {
   exit($libs->JSONencode(array('key'=>$_SESSION[$libs->_getRealIPv4()]['default']['public-key'])));
  }
 
- /*
-  * If you wish to do anything further such as add a response that the data was recieved by the server etc
-  * add it here (delete this because it returns the decrypted examples)
-  */
+ /* if more then two keyring entries exist with our users session pick the last entry */
  $c = count($_SESSION[$libs->_getRealIPv4()]);
  $email = ($c >= 2) ? array_pop(array_keys($_SESSION[$libs->_getRealIPv4()])) : 'default';
+
+ /*
+  * If you wish to do anything further such as add a response that the data was recieved by the server etc
+  * add it here (this is EXAMPLE ONLY because it decrypts the sent data)
+  */
  $x = $libs->JSONencode(helper($_POST, $openssl, $libs, $_SESSION[$libs->_getRealIPv4()][$email]['private-key']));
+
+ /*
+  * We create and append a new keyring entry for the client to store based on the email
+  * that was provided. This is example code only and a database driven example should be
+  * developed within your project. Please see the implementation guide for more information.
+  */
  exit($libs->JSONencode(array('success'=>$x,'keyring'=>keyring($settings, $openssl, $libs, $x))));
 }
 
