@@ -49,7 +49,7 @@ here I will only provide the *recommended* argument.
  <script>
   $(document).ready(function(){
    $('#form-id').pidCrypt({
-    appID:'<?php echo $_SESSION[$libs->_getRealIPv4()]['token']; ?>'
+    appID:'<?php echo $_SESSION[$libs->_getRealIPv4()]["token"]; ?>'
    });
   });
  </script>
