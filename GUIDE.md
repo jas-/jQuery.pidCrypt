@@ -95,6 +95,9 @@ $settings['dn']['commonName']             = 'Jason Gerfen';
 $settings['dn']['emailAddress']           = 'jason.gerfen@gmail.com';
 ```
 
+It is recommended you place these above two arrays within their own configuration
+file and simply include it withing your project like so.
+
 ```php
 <?php
 if (!file_exists('config.php')) {
