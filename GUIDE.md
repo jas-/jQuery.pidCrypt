@@ -8,7 +8,6 @@
 * PHP < 5.3
 * A modern browser (doh!)
 
-
 ## Client setup
 Here is a simple method of getting the necessary requirements in place to
 begin implementing this project.
@@ -60,4 +59,37 @@ Simply echo out the server generated CSRF token to make the client aware. The
 AJAX framework which accompanies this project uses customized headers to help
 with data integrity in various manners.
    
-### 
+## Server setup
+A working example can be found in the 'tests' folder. Two scripts exist,
+'default.php' & 'config.php'.
+
+A sample configuration was deemed necessary to clarify the requirements of the
+PHP OpenSSL extension. Two arrays are necessary, one specifies the runtime
+configuration options including key size, algorithm for signing etc. Please
+see http://www.php.net/manual/en/function.openssl-csr-new.php for more
+information about this array's available options.
+
+```php
+$settings['config']['cnf']                = array('config'=>'openssl.cnf',
+                                                  'x509_extensions'=>'usr_cert');
+$settings['config']['expires']            = 365;
+$settings['config']['private']            = true;
+$settings['config']['private_key_type']   = OPENSSL_KEYTYPE_RSA;
+$settings['config']['digest']             = '';
+$settings['config']['keybits']            = 256;
+```
+
+The second is location specific and used when certificate creation and signing
+is used. Please see http://www.php.net/manual/en/function.openssl-csr-new.php for
+more information on its options and use.
+
+```php
+$settings['dn']['countryName']            = 'US';
+$settings['dn']['stateOrProvinceName']    = 'Utah';
+$settings['dn']['localityName']           = 'Salt Lake City';
+$settings['dn']['organizationName']       = 'jQuery.pidCrypt';
+$settings['dn']['organizationalUnitName'] = 'Plug-in for easy implementation of RSA public key encryption';
+$settings['dn']['commonName']             = 'Jason Gerfen';
+$settings['dn']['emailAddress']           = 'jason.gerfen@gmail.com';
+```
+
