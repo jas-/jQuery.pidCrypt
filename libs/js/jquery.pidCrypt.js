@@ -91,6 +91,7 @@
      url: o.formID.attr('action'),
      type: o.formID.attr('method'),
      data: _data,
+     dataType: o.type,
      crossDomain: (o.type==='jsonp') ? true : false,
      beforeSend: function(xhr){
       xhr.setRequestHeader('X-Alt-Referer', o.appID);
@@ -157,7 +158,7 @@
     */
    __hK: function(o){
     var y = function(){
-     var z = (this) ? JSON.parse(this) : false;
+     var z = (this) ? this : false;
      var email = ((z)&&(z.email)) ? z.email : o.appID;
      var key = ((z)&&(z.key)) ? z.key : false;
      if (!key) return false;
@@ -245,7 +246,7 @@
    __hR: function(r, o){
     var x = false;
     if (_validation.__szCk(r)>0){
-     $.each(JSON.parse(r), function(a, b){
+     $.each(r, function(a, b){
       if ((a==='keyring')&&(_validation.__vStr(b['email']))){
        if(!_keys.__hlpr(o, b['email'])){
         var k = _keys.__gUUID(null); var obj = {}; obj[k] = {};
