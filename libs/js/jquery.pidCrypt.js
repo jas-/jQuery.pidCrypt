@@ -94,12 +94,7 @@
      dataType: o.type,
      crossDomain: (o.type==='jsonp') ? true : false,
      beforeSend: function(xhr){
-      xhr.setRequestHeader('X-Alt-Referer', o.appID);
-      if (_validation.__vStr(_data)){
-       xhr.setRequestHeader('Content-MD5', pidCryptUtil.encodeBase64(pidCrypt.MD5(_data)));
-      } else {
-       xhr.setRequestHeader('Content-MD5', pidCryptUtil.encodeBase64(pidCrypt.MD5(o.appID)));
-      }
+      xhr = _main.__sH(o, xhr, _data);
       ((o.preCallback)&&($.isFunction(o.preCallback))) ? o.preCallback(xhr) : false;
      },
      success: function(x, status, xhr){
@@ -143,6 +138,25 @@
      }
     });
     return _encrypt.__eO(o, obj);
+   },
+
+   /**
+    * @function __sH
+    * @abstract Sets application specific header options
+    */
+   __sH: function(o, xhr, _data){
+    xhr.setRequestHeader('X-Alt-Referer', o.appID);
+    if (_validation.__vStr(_data)){
+     xhr.setRequestHeader('Content-MD5', pidCryptUtil.encodeBase64(pidCrypt.MD5(_data)));
+    } else {
+     xhr.setRequestHeader('Content-MD5', pidCryptUtil.encodeBase64(pidCrypt.MD5(o.appID)));
+    }
+    if (!_data){
+     xhr.setRequestHeader('Access-Control-Allow-Origin', _keys.__id());
+     xhr.setRequestHeader('Access-Control-Allow-Methods', 'POST');
+     xhr.setRequestHeader('Content-Type', 'application/json');
+    }
+    return xhr;
    }
   }
 
@@ -636,6 +650,7 @@
     * @abstract Function used combine string checking functions
     */
    __vStr: function(x){
+    if (!x) return false;
     return ((x==false)||(x.length==0)||(!x)||(x==null)||(x=='')||(typeof x=='undefined')) ? false : true;
    },
 
