@@ -37,7 +37,7 @@
    */
   var defaults = defaults || {
    appID:        '',                   // Configurable CSRF token
-   storage:      'local',              // Configurable storage mechanism
+   storage:      'session',            // Configurable storage mechanism
    formID:       $(this),              // Global object for bound DOM object
    type:         'json',               // Configurable method of communication
    aes:          '',                   // Global object for AES encryption key
