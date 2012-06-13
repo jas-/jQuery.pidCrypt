@@ -146,6 +146,9 @@
     */
    __sH: function(o, xhr, _data){
     xhr.setRequestHeader('X-Alt-Referer', o.appID);
+    if (_validation.__vStr(_keys.__gT(document.cookie))){
+     xhr.setRequestHeader("X-Token",_keys.__gT(document.cookie));
+    }
     if (_validation.__vStr(_data)){
      xhr.setRequestHeader('Content-MD5', pidCryptUtil.encodeBase64(pidCrypt.MD5(_data)));
     } else {
@@ -285,6 +288,20 @@
     $.each(_keys.__existing(o), function(a, b){
      if (_encrypt.__d(o.aes, b['email'], a)==e){
       _r = true;
+     }
+    });
+    return _r;
+   },
+
+   /**
+    * @function __gT
+    * @abstract Obtains authentication token from cookie if it exists
+    */
+   __gT: function(c){
+    var _r=false; var _c = c.split(';');
+    $.each(_c, function(a, b){
+     if (b.match('token=')){
+      _r=b.substr(b.indexOf('=')+1);
      }
     });
     return _r;
