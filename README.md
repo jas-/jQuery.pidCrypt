@@ -24,6 +24,13 @@
 * Cookie support
 * Debugging output
 
+## SCREENSHOT:
+Here is an screenshot of an impelmentation bound to a form with multiple public keys forcing
+a modal window pop-up along with debugging output at the bottom showing the encrypted public
+keys stored within the HTML5 storage options.
+
+![jQuery.pidCrypt](https://raw.github.com/jas-/jQuery.pidCrypt/master/screenshots/screenshot-1.png)
+
 ## OPTIONS:
 * appID: Optional CSRF token
 * storage: HTML5 localStorage, sessionStorage and cookies supported
